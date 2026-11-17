@@ -1,0 +1,22 @@
+{
+  "name": "accountable",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "e2e"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"uv run -m uvicorn accountable.main:app --host 127.0.0.1 --port 8000 --reload --reload-dir backend/accountable\" \"npm run dev -w frontend\"",
+    "seed": "uv run -m accountable.seed",
+    "test": "npm run test:backend && npm run test:unit && npm run test:e2e",
+    "test:backend": "uv run -m pytest backend/tests",
+    "test:unit": "npm run test -w frontend",
+    "test:e2e": "npm run test -w e2e",
+    "typecheck": "npm run typecheck -w frontend",
+    "lint": "npm run lint -w frontend && uv run -m ruff check backend",
+    "build": "npm run build -w frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7"
+  }
+}
