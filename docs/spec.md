@@ -25,7 +25,7 @@ Requirements are numbered so they can be referred to in tests and reviews. Each 
 | Lost        | 0%                | Raspberry                     |
 
 - **R5**: A deal's probability is set from its stage when the stage changes. A probability typed by hand is kept until the stage changes again.
-- **R6**: Moving a deal to Won or Lost sets its actual close date to today, unless it already has one. Moving to any other stage leaves the close date alone.
+- **R6**: Moving a deal to Won or Lost sets its actual close date to today, unless it already has one. Moving from Won or Lost to an open stage clears the actual close date, because an open deal has no outcome. Moving between Won and Lost keeps it. Other moves leave it alone.
 - **R7**: Stages are fixed. Users cannot add, rename or reorder them.
 
 ### 1.3 Sections and tables
@@ -147,7 +147,7 @@ From the brand skill (`.claude/skills/brand/SKILL.md`, same content as `docs/BRA
 - Top row: four stat panels, each with one large number in JetBrains Mono: won this year, revenue won this year, open pipeline value, expected revenue.
 - Line chart: revenue won per month, 18 months (R22), Sea Green line.
 - Bar chart: deals won per month, Cerulean bars, same months.
-- Pipeline visual: horizontal funnel of the four open stages plus Won, bar length by value, with expected revenue as a label. Colors from section 4.1.
+- Pipeline visual: one stacked bar of the four open stages, segments sized by value, with a legend listing value and expected revenue per stage. Colors from section 4.1. This is the design approved in `docs/mockups/final.html`.
 - Lower row: follow-ups panel (overdue first, in Raspberry text) and recent activity panel.
 
 ### 4.4 Pipeline
@@ -195,13 +195,14 @@ The intent's success criteria stand as written in `docs/intent.md`. Automated te
 
 ## Decisions to confirm
 
-These are choices this spec makes that the intent did not settle. Each can be changed before building starts.
+These were choices the intent did not settle. Each item records the decision made. The user asked for the best decisions to be made without them, so these can be changed, but a change goes into this spec first.
 
-1. **Stage changes as their own table.** The intent lists activity types as note, call and email. The automatic "Moved from X to Y" entries therefore go in `deal_stage_changes`, not in `activities`.
-2. **Deleting a deal removes its stage history.** It is owned data, not a linked record. The alternative is to block deletes of deals with any history, which would make most deals undeletable.
-3. **Contact timeline includes the main-contact deals.** The intent says "everything that has happened with them". Without this, a contact's timeline would miss most deal activity.
-4. **Organization timeline includes stage changes.** The intent names activities only. Stage changes are included because they are part of what happened with the company's deals.
-5. **Follow-up window.** "Upcoming" means due within the next 14 days. The intent does not give a number.
-6. **Fonts bundled.** The brand names Google Fonts, but R29 needs no internet. This spec bundles them.
-7. **Stage colors.** Six stages need six colors from a palette of five plus a Midnight tint. Negotiation uses the Midnight tint so it does not match Won's Sea Green.
-8. **Client-side search and sort.** The data is small (about 25 deals, 20 contacts), so tables filter and sort in the browser.
+1. **Stage changes as their own table.** The intent lists activity types as note, call and email. The automatic "Moved from X to Y" entries therefore go in `deal_stage_changes`, not in `activities`. **Decided:** keep.
+2. **Deleting a deal removes its stage history.** It is owned data, not a linked record. The alternative is to block deletes of deals with any history, which would make most deals undeletable. **Decided:** keep. Stage history is part of the deal, and the deal's activities still block its delete (R14).
+3. **Contact timeline includes the main-contact deals.** The intent says "everything that has happened with them". Without this, a contact's timeline would miss most deal activity. **Decided:** keep, as R11 states.
+4. **Organization timeline includes stage changes.** The intent names activities only. Stage changes are included because they are part of what happened with the company's deals. **Decided:** keep.
+5. **Follow-up window.** "Upcoming" means due within the next 14 days. The intent does not give a number. **Decided:** 14 days.
+6. **Fonts bundled.** The brand names Google Fonts, but R29 needs no internet. This spec bundles them. **Decided:** bundle.
+7. **Stage colors.** Six stages need six colors from a palette of five plus a Midnight tint. Negotiation uses the Midnight tint so it does not match Won's Sea Green. **Decided:** keep, as in `final.html`.
+8. **Client-side search and sort.** The data is small (about 25 deals, 20 contacts), so tables filter and sort in the browser. **Decided:** keep.
+9. **Reopening a Won or Lost deal.** The intent does not say what happens when a won or lost deal moves back to an open stage. **Decided:** clear the actual close date, because an open deal has no outcome. The probability follows the new stage (R5). Won to Lost keeps the date, under the intent's rule that an existing actual close date is not replaced (R6).
