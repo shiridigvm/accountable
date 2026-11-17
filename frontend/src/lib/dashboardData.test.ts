@@ -13,17 +13,20 @@ describe('dashboard chart data', () => {
     expect(monthLabel('2026-11')).toBe('Nov 26');
   });
 
-  it('shows won revenue up to this month and expected revenue from this month on', () => {
-    const rows = revenueRows(months, '2026-11');
-    expect(rows[0]).toEqual({ label: 'Oct 26', won: 200, expected: null });
-    expect(rows[1]).toEqual({ label: 'Nov 26', won: 50, expected: 30 });
-    expect(rows[2]).toEqual({ label: 'Dec 26', won: null, expected: 90 });
+  it('charts won revenue per month, in dollars', () => {
+    expect(revenueRows(months)).toEqual([
+      { label: 'Oct 26', won: 200 },
+      { label: 'Nov 26', won: 50 },
+      { label: 'Dec 26', won: 0 },
+    ]);
   });
 
-  it('counts won deals up to this month and expected deals after it', () => {
-    const rows = countRows(months, '2026-11');
-    expect(rows.map((r) => r.count)).toEqual([2, 1, 2]);
-    expect(rows.map((r) => r.future)).toEqual([false, false, true]);
+  it('charts won deal counts per month, not expected closes', () => {
+    expect(countRows(months)).toEqual([
+      { label: 'Oct 26', count: 2 },
+      { label: 'Nov 26', count: 1 },
+      { label: 'Dec 26', count: 0 },
+    ]);
   });
 
   it('reads the month from today', () => {

@@ -27,6 +27,21 @@ describe('DataTable', () => {
     expect(namesInOrder()).toEqual(['Alpha']);
   });
 
+  it('searches a column that is empty in the first row', async () => {
+    type Org = { name: string; organization: string | null };
+    const orgColumns: ColumnDef<Org, unknown>[] = [
+      { accessorKey: 'name', header: 'Name' },
+      { accessorKey: 'organization', header: 'Organization' },
+    ];
+    const orgData: Org[] = [
+      { name: 'Amelia', organization: null },
+      { name: 'Bo', organization: 'Kestrel Ltd' },
+    ];
+    render(<DataTable label="Things" searchLabel="Search things" data={orgData} columns={orgColumns} emptyText="None" />);
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Search things' }), 'kestrel');
+    expect(namesInOrder()).toEqual(['Bo']);
+  });
+
   it('sorts by a column when its heading is clicked, and back again', async () => {
     render(<DataTable label="Things" searchLabel="Search things" data={data} columns={columns} emptyText="None" />);
     await userEvent.click(screen.getByRole('button', { name: /Name/ }));

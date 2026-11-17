@@ -4,7 +4,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
   Line,
   LineChart,
   ReferenceLine,
@@ -26,22 +25,13 @@ export default function Dashboard() {
   const board = useResource<Board>('/api/pipeline');
   const [error, setError] = useState<string | null>(null);
 
-  const revenue = useMemo(
-    () => (dashboard.data ? revenueRows(dashboard.data.monthly, todayMonthOf(dashboard.data.today)) : []),
-    [dashboard.data],
-  );
-  const counts = useMemo(
-    () => (dashboard.data ? countRows(dashboard.data.monthly, todayMonthOf(dashboard.data.today)) : []),
-    [dashboard.data],
-  );
+  const revenue = useMemo(() => (dashboard.data ? revenueRows(dashboard.data.monthly) : []), [dashboard.data]);
+  const counts = useMemo(() => (dashboard.data ? countRows(dashboard.data.monthly) : []), [dashboard.data]);
 
-  if (dashboard.error) return <p className="form-error" role="alert">{dashboard.error}</p>;
+  const loadError = dashboard.error ?? board.error;
+  if (loadError) return <p className="form-error" role="alert">{loadError}</p>;
   if (!dashboard.data || !board.data) return <p className="empty">Loading…</p>;
   const data = dashboard.data;
-  const lateDeals = board.data.columns
-    .flatMap((c) => c.deals)
-    .filter((d) => d.late)
-    .sort((a, b) => a.expected_close.localeCompare(b.expected_close));
   const stats = data.stats;
   const openStages = board.data.columns.filter((c) => OPEN_STAGES.includes(c.stage));
   const openTotal = openStages.reduce((sum, c) => sum + c.value_cents, 0);
@@ -68,31 +58,16 @@ export default function Dashboard() {
       {error && <p className="form-error" role="alert">{error}</p>}
 
       <section className="kpis" aria-label="Headline figures">
-        <Kpi label="Won this year" value={formatMoney(stats.won_year_cents)} hint={`${stats.won_year_count} deals`} />
+        <Kpi label="Deals won this year" value={String(stats.won_year_count)} hint="Closed as Won" />
+        <Kpi label="Revenue won this year" value={formatMoney(stats.won_year_cents)} hint="Value of deals won" />
         <Kpi label="Open pipeline" value={formatMoney(stats.open_cents)} hint={`${stats.open_count} open deals`} />
         <Kpi label="Expected revenue" value={formatMoney(stats.expected_cents)} hint="Value times chance of close" />
-        <Kpi
-          label="Late"
-          value={`${stats.late_count} ${stats.late_count === 1 ? 'deal' : 'deals'}`}
-          hint="Open past their close date"
-          alert={stats.late_count > 0}
-        />
       </section>
 
       <div className="chart-row">
         <section className="panel">
           <div className="panel-head">
             <h2 className="section-title">Revenue won by month</h2>
-            <span className="legend">
-              <span>
-                <i className="dot" style={{ background: '#06d6a0' }} />
-                Won
-              </span>
-              <span>
-                <i className="dot" style={{ background: '#118ab2' }} />
-                Expected
-              </span>
-            </span>
           </div>
           <div className="chart">
             <ResponsiveContainer width="100%" height={260}>
@@ -107,8 +82,7 @@ export default function Dashboard() {
                   strokeDasharray="3 3"
                   label={{ value: 'today', position: 'top', fontSize: 11, fill: '#5b7480' }}
                 />
-                <Line type="linear" dataKey="won" name="Won" stroke="#04875f" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} isAnimationActive={false} />
-                <Line type="linear" dataKey="expected" name="Expected" stroke="#118ab2" strokeWidth={2} strokeDasharray="5 5" dot={false} connectNulls={false} isAnimationActive={false} />
+                <Line type="linear" dataKey="won" name="Won" stroke="#06d6a0" strokeWidth={2.5} dot={{ r: 3 }} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -116,7 +90,6 @@ export default function Dashboard() {
         <section className="panel">
           <div className="panel-head">
             <h2 className="section-title">Deals won by month</h2>
-            <span className="muted small">Light bars: expected closes.</span>
           </div>
           <div className="chart">
             <ResponsiveContainer width="100%" height={260}>
@@ -125,19 +98,14 @@ export default function Dashboard() {
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#5b7480' }} interval={2} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#5b7480' }} width={28} />
                 <Tooltip />
-                <Bar dataKey="count" name="Deals" radius={[3, 3, 0, 0]} isAnimationActive={false}>
-                  {counts.map((row) => (
-                    <Cell key={row.label} fill={row.future ? '#bfe3ef' : '#118ab2'} />
-                  ))}
-                </Bar>
+                <Bar dataKey="count" name="Deals" fill="#118ab2" radius={[3, 3, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </section>
       </div>
 
-      <div className="three-row">
-        <section className="panel">
+      <section className="panel">
           <h2 className="section-title">Open pipeline</h2>
           <div className="stack-bar" aria-hidden="true">
             {openStages.map((c) => (
@@ -158,8 +126,9 @@ export default function Dashboard() {
               ))}
             </tbody>
           </table>
-        </section>
+      </section>
 
+      <div className="two-row">
         <section className="panel">
           <div className="panel-head">
             <h2 className="section-title">Follow-ups</h2>
@@ -192,25 +161,7 @@ export default function Dashboard() {
         </section>
 
         <section className="panel">
-          <h2 className="section-title">Late deals</h2>
-          {lateDeals.length === 0 ? (
-            <p className="empty">No late deals.</p>
-          ) : (
-            <ul className="plain-list">
-              {lateDeals.map((d) => (
-                <li key={d.id} className="follow-up">
-                  <div>
-                    <Link to={`/deals/${d.id}`}>{d.name}</Link>
-                    <div className="muted small">
-                      {d.stage} · {formatMoney(d.value_cents)}
-                    </div>
-                  </div>
-                  <span className="late-text small">{formatDate(d.expected_close)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          <h2 className="section-title late-gap">Recent activity</h2>
+          <h2 className="section-title">Recent activity</h2>
           <Timeline entries={data.recent} />
           <p className="muted small">
             <Link to="/pipeline">Open the pipeline</Link>

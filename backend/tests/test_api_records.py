@@ -205,3 +205,20 @@ def test_reset_is_hidden_unless_enabled(client, monkeypatch):
 def test_dates_are_iso_strings(client):
     deal = make_deal(client)
     assert deal["expected_close"] == date(2027, 1, 15).isoformat()
+
+
+def test_patch_stage_only_applies_stage_rules(client):
+    # The deal edit form sends only changed fields. A stage-only PATCH must get the stage default
+    # probability (R5) and today's close date for Won (R6).
+    created = client.post(
+        "/api/deals",
+        json={
+            "name": "Stage only",
+            "stage": "New",
+            "value_cents": 100000,
+            "expected_close": "2027-01-15",
+        },
+    ).json()
+    edited = client.patch(f"/api/deals/{created['id']}", json={"stage": "Won"}).json()
+    assert edited["probability"] == 100
+    assert edited["actual_close"] == "2026-11-17"

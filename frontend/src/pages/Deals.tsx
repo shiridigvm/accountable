@@ -74,6 +74,14 @@ export function toBody(values: Record<string, string>) {
   };
 }
 
+// An edit sends only the fields the user changed. Re-sending an untouched probability or close
+// date would overwrite the stage rules (R5, R6) that the server applies on a stage change.
+export function changedBody(initial: Record<string, string>, values: Record<string, string>) {
+  const before = toBody(initial);
+  const after = toBody(values);
+  return Object.fromEntries(Object.entries(after).filter(([key, value]) => value !== before[key as keyof typeof before]));
+}
+
 export default function Deals() {
   const deals = useResource<Deal[]>('/api/deals');
   const orgs = useResource<Organization[]>('/api/organizations');
@@ -159,9 +167,8 @@ export default function Deals() {
           submitLabel={editing === 'new' ? 'Add' : 'Save'}
           onClose={() => setEditing(null)}
           onSave={async (values) => {
-            const body = toBody(values);
-            if (editing === 'new') await api('POST', '/api/deals', body);
-            else await api('PATCH', `/api/deals/${editing.id}`, body);
+            if (editing === 'new') await api('POST', '/api/deals', toBody(values));
+            else await api('PATCH', `/api/deals/${editing.id}`, changedBody(toInitial(editing), values));
             deals.reload();
           }}
         />

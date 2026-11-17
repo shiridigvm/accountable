@@ -1,7 +1,7 @@
 // Board helpers for drag and drop. The board updates on screen at once, and the server's answer
 // replaces it (R20). These mirror the backend rules for stage, probability and position.
 import type { Board, BoardDeal, BoardColumn } from '../api/types';
-import { DEFAULT_PROBABILITY, type Stage } from './stages';
+import { DEFAULT_PROBABILITY, OPEN_STAGES, type Stage } from './stages';
 
 export function findColumn(board: Board, dealId: number): BoardColumn | undefined {
   return board.columns.find((c) => c.deals.some((d) => d.id === dealId));
@@ -18,6 +18,8 @@ export function moveDealLocally(board: Board, dealId: number, stage: Stage, posi
     stage,
     probability,
     expected_cents: Math.round((deal.value_cents * probability) / 100),
+    // Only open deals can be late (R10). A card dropped in Won or Lost loses the flag at once.
+    late: OPEN_STAGES.includes(stage) && deal.late,
   };
   const columns = board.columns.map((column) => {
     const remaining = column.deals.filter((d) => d.id !== dealId);

@@ -17,7 +17,7 @@ test('the dashboard shows the figures the API reports', async ({ page, request }
   await expect(kpis).toContainText(money(dashboard.stats.won_year_cents));
   await expect(kpis).toContainText(money(dashboard.stats.open_cents));
   await expect(kpis).toContainText(money(dashboard.stats.expected_cents));
-  await expect(kpis).toContainText(`${dashboard.stats.late_count} deals`);
+  await expect(kpis.locator(".kpi", { hasText: "Deals won this year" }).locator(".kpi-value")).toHaveText(String(dashboard.stats.won_year_count));
 });
 
 test('the dashboard has a line chart, a bar chart and the pipeline visual', async ({ page }) => {
@@ -61,9 +61,8 @@ test('a deal marked won raises the won figures on the dashboard', async ({ page,
   expect(moved.ok()).toBeTruthy();
 
   await page.goto('/dashboard');
-  await expect(page.getByRole('region', { name: 'Headline figures' })).toContainText(
-    `${before.stats.won_year_count + 1} deals`,
-  );
+  const wonTile = page.getByRole('region', { name: 'Headline figures' }).locator('.kpi', { hasText: 'Deals won this year' });
+  await expect(wonTile.locator('.kpi-value')).toHaveText(String(before.stats.won_year_count + 1));
 });
 
 test('the dashboard has no console errors', async ({ page }) => {

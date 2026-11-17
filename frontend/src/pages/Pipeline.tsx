@@ -100,13 +100,18 @@ export default function Pipeline() {
     setLocal(moveDealLocally(board, dealId, stage, position));
     try {
       await api('POST', `/api/deals/${dealId}/move`, { stage, position });
-      const fresh = await api<Board>('GET', '/api/pipeline');
-      setLocal(fresh);
-      serverBoard.reload();
     } catch (failure) {
       setLocal(null);
       setError(`The move was not saved. ${errorMessage(failure)}`);
+      return;
     }
+    // The move is saved. If the refresh fails, keep the local board, which already shows the move.
+    try {
+      setLocal(await api<Board>('GET', '/api/pipeline'));
+    } catch {
+      // Keep the local board until the next successful load.
+    }
+    serverBoard.reload();
   }
 
   if (serverBoard.error) return <p className="form-error" role="alert">{serverBoard.error}</p>;

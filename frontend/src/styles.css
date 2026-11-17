@@ -672,9 +672,14 @@ textarea:focus-visible {
   margin-bottom: 14px;
 }
 
-.three-row {
+.pipeline-panel {
+  margin-bottom: 14px;
+}
+
+/* Lower dashboard row: follow-ups and recent activity. */
+.two-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -737,16 +742,10 @@ textarea:focus-visible {
   color: var(--sea-ink);
 }
 
-@media (max-width: 1280px) {
-  .three-row {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
 @media (max-width: 1100px) {
   .kpis,
   .chart-row,
-  .three-row {
+  .two-row {
     grid-template-columns: 1fr;
   }
 }
@@ -792,10 +791,6 @@ textarea:focus-visible {
   gap: 14px;
   font-size: 12px;
   color: var(--muted);
-}
-
-.late-gap {
-  margin-top: 18px;
 }
 
 .late-text {

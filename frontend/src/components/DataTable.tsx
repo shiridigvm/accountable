@@ -33,6 +33,9 @@ export function DataTable<T>({ label, data, columns, searchLabel, toolbar, empty
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    // The default only searches columns whose first row holds a string or number, so a column
+    // that is empty in the first row (such as an organization on a contact with none) is skipped.
+    getColumnCanGlobalFilter: () => true,
   });
   const rows = table.getRowModel().rows;
 
