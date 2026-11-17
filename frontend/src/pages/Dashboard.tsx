@@ -1,13 +1,24 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { api, errorMessage } from '../api/client';
 import type { Board, Dashboard as DashboardData } from '../api/types';
 import { useResource } from '../api/useResource';
-import { PageHeader } from '../components/PageHeader';
 import { Timeline } from '../components/Timeline';
-import { countRows, revenueRows, todayMonthOf } from '../lib/dashboardData';
-import { formatDate, formatMoney } from '../lib/format';
+import { countRows, monthLabel, revenueRows, todayMonthOf } from '../lib/dashboardData';
+import { formatDate, formatLongDate, formatMoney } from '../lib/format';
 import { STAGE_COLORS, OPEN_STAGES } from '../lib/stages';
 
 export default function Dashboard() {
@@ -27,6 +38,10 @@ export default function Dashboard() {
   if (dashboard.error) return <p className="form-error" role="alert">{dashboard.error}</p>;
   if (!dashboard.data || !board.data) return <p className="empty">Loading…</p>;
   const data = dashboard.data;
+  const lateDeals = board.data.columns
+    .flatMap((c) => c.deals)
+    .filter((d) => d.late)
+    .sort((a, b) => a.expected_close.localeCompare(b.expected_close));
   const stats = data.stats;
   const openStages = board.data.columns.filter((c) => OPEN_STAGES.includes(c.stage));
   const openTotal = openStages.reduce((sum, c) => sum + c.value_cents, 0);
@@ -43,7 +58,13 @@ export default function Dashboard() {
 
   return (
     <>
-      <PageHeader title="Dashboard" subtitle={`Sales at a glance, as of ${formatDate(data.today)}.`} />
+      <header className="dash-head">
+        <div>
+          <h1>Dashboard</h1>
+          <p className="accent">Sales at a glance, and what needs a call today.</p>
+        </div>
+        <p className="today-date">{formatLongDate(data.today)}</p>
+      </header>
       {error && <p className="form-error" role="alert">{error}</p>}
 
       <section className="kpis" aria-label="Headline figures">
@@ -62,17 +83,32 @@ export default function Dashboard() {
         <section className="panel">
           <div className="panel-head">
             <h2 className="section-title">Revenue won by month</h2>
-            <span className="muted small">Solid: won. Dashed: expected from open deals.</span>
+            <span className="legend">
+              <span>
+                <i className="dot" style={{ background: '#06d6a0' }} />
+                Won
+              </span>
+              <span>
+                <i className="dot" style={{ background: '#118ab2' }} />
+                Expected
+              </span>
+            </span>
           </div>
           <div className="chart">
             <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={revenue} margin={{ top: 10, right: 16, bottom: 0, left: 0 }}>
+              <LineChart data={revenue} margin={{ top: 22, right: 16, bottom: 0, left: 0 }}>
                 <CartesianGrid vertical={false} stroke="#eef3f4" />
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#5b7480' }} interval={2} />
                 <YAxis tickFormatter={(v: number) => `$${Math.round(v / 1000)}k`} tick={{ fontSize: 11, fill: '#5b7480' }} width={56} />
                 <Tooltip formatter={(v) => formatMoney(Number(v) * 100)} />
-                <Line type="monotone" dataKey="won" name="Won" stroke="#04875f" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-                <Line type="monotone" dataKey="expected" name="Expected" stroke="#118ab2" strokeWidth={2} strokeDasharray="5 5" dot={false} connectNulls={false} />
+                <ReferenceLine
+                  x={monthLabel(todayMonthOf(data.today))}
+                  stroke="#c9d6da"
+                  strokeDasharray="3 3"
+                  label={{ value: 'today', position: 'top', fontSize: 11, fill: '#5b7480' }}
+                />
+                <Line type="linear" dataKey="won" name="Won" stroke="#04875f" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} isAnimationActive={false} />
+                <Line type="linear" dataKey="expected" name="Expected" stroke="#118ab2" strokeWidth={2} strokeDasharray="5 5" dot={false} connectNulls={false} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -89,7 +125,7 @@ export default function Dashboard() {
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#5b7480' }} interval={2} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#5b7480' }} width={28} />
                 <Tooltip />
-                <Bar dataKey="count" name="Deals" radius={[3, 3, 0, 0]}>
+                <Bar dataKey="count" name="Deals" radius={[3, 3, 0, 0]} isAnimationActive={false}>
                   {counts.map((row) => (
                     <Cell key={row.label} fill={row.future ? '#bfe3ef' : '#118ab2'} />
                   ))}
@@ -125,7 +161,10 @@ export default function Dashboard() {
         </section>
 
         <section className="panel">
-          <h2 className="section-title">Follow-ups</h2>
+          <div className="panel-head">
+            <h2 className="section-title">Follow-ups</h2>
+            <span className="muted small">overdue first</span>
+          </div>
           {data.follow_ups.length === 0 ? (
             <p className="empty">No follow-ups due in the next 14 days.</p>
           ) : (
@@ -153,7 +192,25 @@ export default function Dashboard() {
         </section>
 
         <section className="panel">
-          <h2 className="section-title">Recent activity</h2>
+          <h2 className="section-title">Late deals</h2>
+          {lateDeals.length === 0 ? (
+            <p className="empty">No late deals.</p>
+          ) : (
+            <ul className="plain-list">
+              {lateDeals.map((d) => (
+                <li key={d.id} className="follow-up">
+                  <div>
+                    <Link to={`/deals/${d.id}`}>{d.name}</Link>
+                    <div className="muted small">
+                      {d.stage} · {formatMoney(d.value_cents)}
+                    </div>
+                  </div>
+                  <span className="late-text small">{formatDate(d.expected_close)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <h2 className="section-title late-gap">Recent activity</h2>
           <Timeline entries={data.recent} />
           <p className="muted small">
             <Link to="/pipeline">Open the pipeline</Link>

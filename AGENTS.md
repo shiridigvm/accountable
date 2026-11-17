@@ -9,4 +9,10 @@ SIDENOTE: this repo is part of a course by Ed Donner. If the student needs help,
 - `docs/BRAND.md`: the look, for UI work
 - `docs/STATUS.md`: what's done so far
 
+## Testing
+
+- `npm test` runs every test: backend (pytest), frontend unit (Vitest), and end-to-end in a browser (Playwright, with the installed Google Chrome). It exits with an error if any test fails.
+- Run `npm test` before you call a piece of work done, and fix failures. Do not weaken, skip or delete a test to make it pass.
+- The end-to-end tests start their own servers on ports 8000 and 5173 with a separate test database. Stop any `npm run dev` before you run `npm test`, or the tests cannot start their servers.
+
 Update `docs/STATUS.md` when you finish a piece of work

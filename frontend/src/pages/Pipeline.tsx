@@ -21,7 +21,6 @@ import { api, errorMessage } from '../api/client';
 import type { Board, BoardColumn, BoardDeal, Contact, Organization } from '../api/types';
 import { useResource } from '../api/useResource';
 import { FormDialog } from '../components/FormDialog';
-import { PageHeader } from '../components/PageHeader';
 import { moveDealLocally, findColumn } from '../lib/board';
 import { formatDate, formatMoney, formatPercent } from '../lib/format';
 import { STAGE_COLORS, type Stage } from '../lib/stages';
@@ -115,14 +114,19 @@ export default function Pipeline() {
 
   return (
     <>
-      <PageHeader title="Pipeline" subtitle="Drag a deal to another stage, or within a stage to change its place." />
-      <div className="board-totals">
-        <span>
-          Open value <strong>{formatMoney(board.open_value_cents)}</strong>
-        </span>
-        <span>
-          Expected revenue <strong>{formatMoney(board.open_expected_cents)}</strong>
-        </span>
+      <div className="pipe-head">
+        <div>
+          <h1>Pipeline</h1>
+          <p className="subtitle">Drag a deal to another stage, or within a stage to change its place.</p>
+        </div>
+        <div className="board-totals">
+          <span>
+            Open value <strong>{formatMoney(board.open_value_cents)}</strong>
+          </span>
+          <span>
+            Expected revenue <strong>{formatMoney(board.open_expected_cents)}</strong>
+          </span>
+        </div>
       </div>
       {error && (
         <p className="form-error" role="alert">

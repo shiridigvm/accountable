@@ -20,3 +20,14 @@ export function formatDate(iso: string | null | undefined): string {
 export function formatPercent(value: number): string {
   return `${value}%`;
 }
+
+// Weekday, month, day and year, as the dashboard header shows it: Tuesday, Nov 17, 2026.
+export function formatLongDate(iso: string): string {
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}

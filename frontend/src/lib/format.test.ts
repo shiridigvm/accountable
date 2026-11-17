@@ -31,3 +31,10 @@ describe('formatPercent', () => {
     expect(formatPercent(75)).toBe('75%');
   });
 });
+
+describe('formatLongDate', () => {
+  it('shows the weekday with the date', async () => {
+    const { formatLongDate } = await import('./format');
+    expect(formatLongDate('2026-11-17')).toBe('Tuesday, Nov 17, 2026');
+  });
+});

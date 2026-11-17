@@ -506,8 +506,8 @@ textarea:focus-visible {
 .board-totals {
   display: flex;
   gap: 28px;
-  margin-bottom: 14px;
   color: var(--muted);
+  text-align: right;
 }
 
 .board-totals strong {
@@ -749,4 +749,65 @@ textarea:focus-visible {
   .three-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* Dashboard and pipeline headers, as in the approved mockup */
+.dash-head,
+.pipe-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.dash-head h1 {
+  font-size: 28px;
+  letter-spacing: -0.01em;
+}
+
+.pipe-head h1 {
+  font-size: 26px;
+  letter-spacing: -0.01em;
+}
+
+.accent {
+  margin: 4px 0 0;
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--sea-ink);
+}
+
+.today-date {
+  margin: 0;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.late-gap {
+  margin-top: 18px;
+}
+
+.late-text {
+  color: var(--raspberry);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.card-row span {
+  white-space: nowrap;
+}
+
+.follow-up .link-button {
+  font-size: 12px;
+  font-weight: 500;
 }
