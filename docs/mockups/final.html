@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accountable final mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page: #F0F4F5;
+    --panel: #FFFFFF;
+    --lane: #E4ECEE;
+    --ink: #073B4C;
+    --muted: #5B7480;
+    --sea: #06D6A0;
+    --sea-ink: #04875F;
+    --sea-tint: #E3F9F1;
+    --cerulean: #118AB2;
+    --raspberry: #EF476F;
+    --raspberry-tint: #FDE8EE;
+    --marigold: #FFC145;
+    --coral: #F78C6B;
+    --midnight-tint: #3E6373;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    font-size: 14px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100vh;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  aside { background: var(--panel); padding: 26px 16px; }
+  .wordmark { font-weight: 700; font-size: 18px; padding: 0 10px 26px; }
+  .wordmark span { color: var(--sea-ink); }
+  .nav a {
+    display: flex; justify-content: space-between; padding: 9px 12px; border-radius: 10px;
+    color: var(--muted); text-decoration: none; font-weight: 500; margin-bottom: 2px;
+  }
+  .nav a.active { background: var(--sea-tint); color: var(--ink); }
+  .nav a .n { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); align-self: center; }
+  main { padding: 28px 36px 48px; min-width: 0; }
+  header.top { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 20px; }
+  h1 { font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+  .accent { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 18px; color: var(--sea-ink); margin-top: 4px; }
+  .today { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+  .kpi { background: var(--panel); border-radius: 14px; padding: 16px 18px; }
+  .kpi .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .kpi .num { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 500; margin-top: 8px; }
+  .kpi .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .kpi.alert .num { color: var(--raspberry); }
+  .grid { display: grid; gap: 14px; }
+  .row-a { grid-template-columns: 2fr 1fr; margin-bottom: 14px; }
+  .row-b { grid-template-columns: 1fr 1fr 1fr; margin-bottom: 14px; }
+  .panel { background: var(--panel); border-radius: 18px; padding: 20px 22px; min-width: 0; }
+  .ph { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .ph h2 { margin: 0; font-size: 15px; font-weight: 600; }
+  .ph .meta { color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); }
+  .sw { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+  svg text { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: var(--muted); }
+  .stack { display: flex; height: 16px; border-radius: 6px; overflow: hidden; margin-bottom: 14px; }
+  .stack div { height: 100%; }
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl td { padding: 9px 0; }
+  .tbl tr + tr td { box-shadow: inset 0 1px 0 #EEF3F4; }
+  .tbl td.r { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .tbl td.muted { color: var(--muted); font-size: 12px; }
+  .tbl td.sub { color: var(--muted); font-size: 12px; padding-top: 0; }
+  .list { list-style: none; margin: 0; padding: 0; }
+  .list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; }
+  .list li + li { box-shadow: inset 0 1px 0 #EEF3F4; }
+  .list .who { color: var(--muted); font-size: 12px; margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+  .tag { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+  .tag.late { background: var(--raspberry-tint); color: var(--raspberry); }
+  .tag.soon { background: var(--sea-tint); color: var(--sea-ink); }
+  .pipe-head { display: flex; justify-content: space-between; align-items: baseline; margin: 30px 0 12px; }
+  .pipe-head h2 { font-size: 22px; margin: 0; font-weight: 700; }
+  .pipe-head .tot { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
+  .board { display: grid; grid-template-columns: repeat(6, minmax(170px, 1fr)); gap: 10px; overflow-x: auto; }
+  .col { background: var(--lane); border-radius: 14px; padding: 12px; min-height: 300px; }
+  .col-head .name { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .col-head .name i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+  .col-head .name b { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-weight: 400; color: var(--muted); font-size: 11px; }
+  .col-head .tot { font-family: 'JetBrains Mono', monospace; font-size: 12px; margin: 6px 0 12px; line-height: 1.6; }
+  .col-head .tot .exp { color: var(--muted); }
+  .card { background: var(--panel); border-radius: 12px; padding: 11px 12px; margin-bottom: 8px; }
+  .card .n { font-weight: 600; font-size: 13px; }
+  .card .o { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .card .r { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 12px; margin-top: 8px; }
+  .card .late { color: var(--raspberry); }
+  .late-pill { font-family: 'Instrument Sans', sans-serif; font-weight: 600; font-size: 10px; color: var(--raspberry); background: var(--raspberry-tint); padding: 2px 7px; border-radius: 999px; }
+  .add { color: var(--muted); font-size: 12px; padding: 6px 2px; }
+</style>
+</head>
+<body>
+<aside>
+  <div class="wordmark">Account<span>able</span></div>
+  <nav class="nav">
+    <a class="active" href="#">Dashboard <span class="n"></span></a>
+    <a href="#">Organizations</a>
+    <a href="#">Contacts</a>
+    <a href="#">Deals</a>
+    <a href="#pipeline">Pipeline <span class="n" id="navOpen"></span></a>
+  </nav>
+</aside>
+
+<main>
+  <header class="top">
+    <div>
+      <h1>Dashboard</h1>
+      <div class="accent">Sales at a glance, and what needs a call today.</div>
+    </div>
+    <div class="today">Tuesday, Nov 17, 2026</div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="grid row-a">
+    <div class="panel">
+      <div class="ph">
+        <h2>Revenue won by month</h2>
+        <div class="legend">
+          <span><i class="sw" style="background:var(--sea)"></i>Won</span>
+          <span><i class="sw" style="background:var(--cerulean)"></i>Expected</span>
+        </div>
+      </div>
+      <svg id="line" viewBox="0 0 780 250" width="100%"></svg>
+    </div>
+    <div class="panel">
+      <div class="ph"><h2>Deals won by month</h2><span class="meta">count</span></div>
+      <svg id="bars" viewBox="0 0 320 250" width="100%"></svg>
+    </div>
+  </section>
+
+  <section class="grid row-b">
+    <div class="panel">
+      <div class="ph"><h2>Open pipeline</h2><span class="meta" id="openTot"></span></div>
+      <div class="stack" id="stack"></div>
+      <table class="tbl" id="stages"></table>
+    </div>
+    <div class="panel">
+      <div class="ph"><h2>Follow-ups</h2><span class="meta">overdue first</span></div>
+      <ul class="list" id="fu"></ul>
+    </div>
+    <div class="panel">
+      <div class="ph"><h2>Late deals</h2><span class="meta" id="lateN"></span></div>
+      <ul class="list" id="late"></ul>
+      <div class="ph" style="margin:18px 0 10px"><h2>Recent activity</h2></div>
+      <ul class="list" id="recent"></ul>
+    </div>
+  </section>
+
+  <div class="pipe-head" id="pipeline">
+    <h2>Pipeline</h2>
+    <span class="tot" id="boardTot"></span>
+  </div>
+  <div class="board" id="board"></div>
+</main>
+
+<script src="data.js"></script>
+<script>
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const COLORS = { New: '#118AB2', Qualified: '#FFC145', Proposal: '#F78C6B', Negotiation: '#3E6373', Won: '#06D6A0', Lost: '#EF476F' };
+  const isOpenStage = (s) => s.p > 0 && s.p < 100;
+
+  document.getElementById('navOpen').textContent = SUMMARY.openCount;
+
+  document.getElementById('kpis').innerHTML = [
+    { label: 'Won in 2026', num: money(SUMMARY.wonValue), hint: SUMMARY.wonCount + ' deals closed' },
+    { label: 'Open pipeline', num: money(SUMMARY.openValue), hint: SUMMARY.openCount + ' deals open' },
+    { label: 'Expected revenue', num: money(SUMMARY.openExpected), hint: 'Value times chance of close' },
+    { label: 'Late', num: SUMMARY.lateCount + ' deals', hint: 'Open past their close date', alert: SUMMARY.lateCount > 0 },
+  ].map((k) => `<div class="kpi ${k.alert ? 'alert' : ''}"><div class="label">${k.label}</div><div class="num">${k.num}</div><div class="hint">${k.hint}</div></div>`).join('');
+
+  // Line chart: solid won, dashed expected, light fill under the won line
+  (function line() {
+    const W = 780, H = 250, pl = 56, pr = 40, pt = 14, pb = 28, today = 12;
+    const max = Math.max(...MONTHLY.wonRev, ...MONTHLY.expRev) * 1.1 || 1;
+    const x = (i) => pl + (i * (W - pl - pr)) / (MONTH_COUNT - 1);
+    const y = (v) => H - pb - (v / max) * (H - pt - pb);
+    let g = '';
+    for (let t = 0; t <= 4; t++) {
+      const v = (max * t) / 4;
+      g += `<line x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}" stroke="#EEF3F4"/>`;
+      g += `<text x="${pl - 8}" y="${y(v) + 3}" text-anchor="end">$${Math.round(v / 1000)}k</text>`;
+    }
+    const won = MONTHLY.wonRev.slice(0, today + 1).map((v, i) => [x(i), y(v)]);
+    const fill = `M${won.map((p) => p.join(',')).join(' L')} L${x(today)},${H - pb} L${x(0)},${H - pb} Z`;
+    g += `<path d="${fill}" fill="#06D6A0" fill-opacity="0.12"/>`;
+    g += `<polyline points="${won.map((p) => p.join(',')).join(' ')}" fill="none" stroke="#04875F" stroke-width="2.5" stroke-linejoin="round"/>`;
+    won.forEach((p) => { g += `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#04875F"/>`; });
+    const exp = MONTHLY.expRev.slice(today).map((v, k) => `${x(today + k)},${y(v)}`).join(' ');
+    g += `<polyline points="${exp}" fill="none" stroke="#118AB2" stroke-width="2" stroke-dasharray="5 5"/>`;
+    g += `<line x1="${x(today)}" x2="${x(today)}" y1="${pt}" y2="${H - pb}" stroke="#C9D6DA" stroke-dasharray="3 3"/>`;
+    g += `<text x="${x(today)}" y="${pt - 2}" text-anchor="middle">today</text>`;
+    MONTH_LABELS.forEach((l, i) => { if (i % 3 === 0) g += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${l}</text>`; });
+    document.getElementById('line').innerHTML = g;
+  })();
+
+  // Bars: won solid, expected light
+  (function bars() {
+    const W = 320, H = 250, pl = 4, pb = 28, pt = 14, today = 12;
+    const max = Math.max(...MONTHLY.wonCount, ...MONTHLY.expCount, 1);
+    const bw = (W - pl) / MONTH_COUNT;
+    let g = '';
+    for (let i = 0; i < MONTH_COUNT; i++) {
+      const future = i > today;
+      const v = future ? MONTHLY.expCount[i] : MONTHLY.wonCount[i];
+      const h = ((H - pb - pt) * v) / max;
+      g += `<rect x="${pl + i * bw + 2}" y="${H - pb - h}" width="${bw - 4}" height="${h}" rx="2" fill="${future ? '#BFE3EF' : '#118AB2'}"/>`;
+      if (i % 4 === 0) g += `<text x="${pl + i * bw}" y="${H - 8}">${MONTH_LABELS[i]}</text>`;
+    }
+    document.getElementById('bars').innerHTML = g;
+  })();
+
+  // Open pipeline: stacked bar and per-stage value and expected
+  const openStages = STAGES.filter(isOpenStage);
+  const openTotal = sumBy(openStages, 'value');
+  document.getElementById('openTot').textContent = money(openTotal) + ' open';
+  document.getElementById('stack').innerHTML = openStages.map((s) =>
+    `<div title="${s.name}" style="width:${(s.value / openTotal) * 100}%;background:${COLORS[s.name]}"></div>`).join('');
+  document.getElementById('stages').innerHTML = openStages.map((s) => `
+    <tr>
+      <td><i class="sw" style="background:${COLORS[s.name]}"></i>${s.name}</td>
+      <td class="r">${money(s.value)}</td>
+      <td class="r muted">${money(s.expected)} exp.</td>
+    </tr>`).join('');
+
+  // Follow-ups: overdue first, then upcoming
+  const fu = FOLLOW_UPS.map((f) => ({ ...f, d: parseDate(f.due) })).sort((a, b) => a.d - b.d);
+  document.getElementById('fu').innerHTML = fu.map((f) => {
+    const late = f.d < TODAY;
+    return `<li><div><div>${f.title}</div><div class="who">${f.who} · ${shortDate(f.d)}</div></div><span class="tag ${late ? 'late' : 'soon'}">${late ? 'Overdue' : 'Upcoming'}</span></li>`;
+  }).join('');
+
+  const lateDeals = DEALS.filter((d) => d.late).sort((a, b) => a.expected - b.expected);
+  document.getElementById('lateN').textContent = lateDeals.length + ' open past close';
+  document.getElementById('late').innerHTML = lateDeals.map((d) =>
+    `<li><div><div>${esc(d.name)}</div><div class="who">${d.stage} · ${money(d.value)}</div></div><span class="mono" style="color:var(--raspberry);font-size:12px">${shortDate(d.expected)}</span></li>`).join('');
+
+  document.getElementById('recent').innerHTML = RECENT.map((r) =>
+    `<li><div><div>${r.text}</div><div class="who">${r.when}</div></div></li>`).join('');
+
+  // Pipeline board
+  document.getElementById('boardTot').textContent =
+    money(SUMMARY.openValue) + ' open  ·  ' + money(SUMMARY.openExpected) + ' expected';
+  document.getElementById('board').innerHTML = STAGES.map((s) => {
+    const totals = isOpenStage(s)
+      ? `${money(s.value)}<br><span class="exp">${money(s.expected)} exp.</span>`
+      : money(s.value);
+    const cards = s.deals.slice().sort((a, b) => b.value - a.value).map((d) => `
+      <div class="card">
+        <div class="n">${esc(d.name)}</div>
+        <div class="o">${esc(d.org)}</div>
+        <div class="r"><span>${money(d.value)}</span><span>${d.open ? d.p + '%' : ''}</span></div>
+        <div class="r"><span class="${d.late ? 'late' : ''}">${shortDate(d.expected)}</span>${d.late ? '<span class="late-pill">Late</span>' : ''}</div>
+      </div>`).join('');
+    return `<div class="col">
+      <div class="col-head">
+        <div class="name"><i style="background:${COLORS[s.name]}"></i>${s.name}<b>${s.deals.length}</b></div>
+        <div class="tot">${totals}</div>
+      </div>
+      ${cards}
+      <div class="add">+ Add deal</div>
+    </div>`;
+  }).join('');
+</script>
+</body>
+</html>

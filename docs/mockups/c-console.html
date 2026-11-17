@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accountable mockup C: console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page: #F0F4F5;
+    --panel: #FFFFFF;
+    --ink: #073B4C;
+    --muted: #5B7480;
+    --sea: #06D6A0;
+    --sea-ink: #04875F;
+    --raspberry: #EF476F;
+    --raspberry-tint: #FDE8EE;
+    --sea-tint: #E3F9F1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    font-size: 13px;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  header.bar {
+    display: flex; align-items: center; gap: 28px; padding: 0 24px; height: 56px;
+    background: var(--panel); border-radius: 0 0 14px 14px; margin-bottom: 16px;
+  }
+  .brand { font-weight: 700; font-size: 16px; margin-right: auto; }
+  .brand span { color: var(--sea-ink); }
+  .tabs a { color: var(--muted); text-decoration: none; font-weight: 500; margin-left: 18px; }
+  .tabs a.on { color: var(--ink); }
+  .tabs a.on::after { content: ''; display: block; height: 3px; background: var(--sea); border-radius: 3px; margin-top: 8px; }
+  .date { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  main { padding: 0 24px 40px; }
+  .strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+  .kpi { background: var(--panel); border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: baseline; }
+  .kpi .label { color: var(--muted); font-size: 12px; }
+  .kpi .num { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 500; }
+  .kpi.alert .num { color: var(--raspberry); }
+  .grid { display: grid; gap: 12px; }
+  .r1 { grid-template-columns: 2fr 1fr 1fr; }
+  .r2 { grid-template-columns: 1fr 1fr 1fr; margin-bottom: 20px; }
+  .panel { background: var(--panel); border-radius: 12px; padding: 16px 18px; }
+  .ph { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .ph h3 { margin: 0; font-size: 13px; font-weight: 600; }
+  .ph span { color: var(--muted); font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+  svg text { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; fill: var(--muted); }
+  .stack { display: flex; height: 22px; border-radius: 6px; overflow: hidden; margin: 6px 0 14px; }
+  .stack div { height: 100%; }
+  .legend { display: grid; grid-template-columns: 1fr auto auto; gap: 6px 14px; font-size: 12px; align-items: center; }
+  .legend .v { font-family: 'JetBrains Mono', monospace; text-align: right; }
+  .legend .e { font-family: 'JetBrains Mono', monospace; text-align: right; color: var(--muted); }
+  .sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 8px; }
+  .list { list-style: none; margin: 0; padding: 0; font-size: 12px; }
+  .list li { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 7px 0; }
+  .list li + li { box-shadow: inset 0 1px 0 #EEF3F4; }
+  .list .m { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  .pill { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+  .pill.late { background: var(--raspberry-tint); color: var(--raspberry); }
+  .pill.soon { background: var(--sea-tint); color: var(--sea-ink); }
+  .board { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .column { background: var(--panel); border-radius: 12px; padding: 10px; }
+  .ch { padding: 4px 4px 10px; }
+  .ch .t { display: flex; align-items: center; gap: 7px; font-weight: 600; }
+  .ch .t i { width: 8px; height: 8px; border-radius: 2px; }
+  .ch .t b { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-weight: 400; color: var(--muted); font-size: 11px; }
+  .ch .s { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .ch .s strong { color: var(--ink); font-weight: 500; }
+  .item { background: var(--page); border-radius: 8px; padding: 9px 10px; margin-bottom: 7px; }
+  .item .n { font-weight: 600; font-size: 12px; }
+  .item .o { color: var(--muted); font-size: 11px; }
+  .item .r { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 11px; margin-top: 7px; }
+  .item .late { color: var(--raspberry); font-weight: 500; }
+  .item .lt { font-family: 'Instrument Sans', sans-serif; font-weight: 600; font-size: 10px; color: var(--raspberry); }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="brand">Account<span>able</span></div>
+  <nav class="tabs">
+    <a class="on" href="#">Dashboard</a>
+    <a href="#">Organizations</a>
+    <a href="#">Contacts</a>
+    <a href="#">Deals</a>
+    <a href="#board">Pipeline</a>
+  </nav>
+  <div class="date">2026-11-17</div>
+</header>
+
+<main>
+  <section class="strip" id="strip"></section>
+
+  <section class="grid r1">
+    <div class="panel">
+      <div class="ph"><h3>Revenue won, monthly</h3><span>solid won · dashed expected</span></div>
+      <svg id="line" viewBox="0 0 700 220" width="100%"></svg>
+    </div>
+    <div class="panel">
+      <div class="ph"><h3>Deals won, monthly</h3><span>count</span></div>
+      <svg id="bars" viewBox="0 0 300 220" width="100%"></svg>
+    </div>
+    <div class="panel">
+      <div class="ph"><h3>Open pipeline</h3><span id="openTot"></span></div>
+      <div class="stack" id="stack"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+
+  <section class="grid r2" style="margin-top:12px">
+    <div class="panel">
+      <div class="ph"><h3>Follow-ups</h3><span>overdue first</span></div>
+      <ul class="list" id="fu"></ul>
+    </div>
+    <div class="panel">
+      <div class="ph"><h3>Recent activity</h3><span>today</span></div>
+      <ul class="list" id="recent"></ul>
+    </div>
+    <div class="panel">
+      <div class="ph"><h3>Late deals</h3><span id="lateN"></span></div>
+      <ul class="list" id="late"></ul>
+    </div>
+  </section>
+
+  <section id="board">
+    <div class="ph" style="margin:0 2px 10px"><h3 style="font-size:15px">Pipeline</h3><span id="boardTot"></span></div>
+    <div class="board" id="columns"></div>
+  </section>
+</main>
+
+<script src="data.js"></script>
+<script>
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const COLORS = { New: '#118AB2', Qualified: '#FFC145', Proposal: '#F78C6B', Negotiation: '#3E6373', Won: '#06D6A0', Lost: '#EF476F' };
+
+  document.getElementById('strip').innerHTML = [
+    { label: 'Won 2026', num: money(SUMMARY.wonValue) },
+    { label: 'Open', num: money(SUMMARY.openValue) },
+    { label: 'Expected', num: money(SUMMARY.openExpected) },
+    { label: 'Late', num: SUMMARY.lateCount + ' deals', alert: SUMMARY.lateCount > 0 },
+  ].map((k) => `<div class="kpi ${k.alert ? 'alert' : ''}"><span class="label">${k.label}</span><span class="num">${k.num}</span></div>`).join('');
+
+  (function line() {
+    const W = 700, H = 220, pl = 50, pr = 10, pt = 10, pb = 26, today = 12;
+    const max = Math.max(...MONTHLY.wonRev, ...MONTHLY.expRev) * 1.1 || 1;
+    const x = (i) => pl + (i * (W - pl - pr)) / (MONTH_COUNT - 1);
+    const y = (v) => H - pb - (v / max) * (H - pt - pb);
+    let g = '';
+    for (let t = 0; t <= 4; t++) {
+      const v = (max * t) / 4;
+      g += `<line x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}" stroke="#EEF3F4"/>`;
+      g += `<text x="${pl - 6}" y="${y(v) + 3}" text-anchor="end">$${Math.round(v / 1000)}k</text>`;
+    }
+    const won = MONTHLY.wonRev.slice(0, today + 1).map((v, i) => `${x(i)},${y(v)}`).join(' ');
+    g += `<polyline points="${won}" fill="none" stroke="#06D6A0" stroke-width="2"/>`;
+    const exp = MONTHLY.expRev.slice(today).map((v, k) => `${x(today + k)},${y(v)}`).join(' ');
+    g += `<polyline points="${exp}" fill="none" stroke="#118AB2" stroke-width="1.6" stroke-dasharray="4 4"/>`;
+    MONTHLY.wonRev.slice(0, today + 1).forEach((v, i) => { g += `<rect x="${x(i) - 2}" y="${y(v) - 2}" width="4" height="4" fill="#04875F"/>`; });
+    MONTH_LABELS.forEach((l, i) => { if (i % 3 === 0) g += `<text x="${x(i)}" y="${H - 6}" text-anchor="middle">${l}</text>`; });
+    document.getElementById('line').innerHTML = g;
+  })();
+
+  (function bars() {
+    const W = 300, H = 220, pl = 4, pb = 26, pt = 8, today = 12;
+    const max = Math.max(...MONTHLY.wonCount, ...MONTHLY.expCount, 1);
+    const bw = (W - pl) / MONTH_COUNT;
+    let g = '';
+    for (let i = 0; i < MONTH_COUNT; i++) {
+      const future = i > today;
+      const v = future ? MONTHLY.expCount[i] : MONTHLY.wonCount[i];
+      const h = ((H - pb - pt) * v) / max;
+      g += `<rect x="${pl + i * bw + 2}" y="${H - pb - h}" width="${bw - 4}" height="${h}" fill="${future ? '#BFE3EF' : '#118AB2'}"/>`;
+      if (i % 4 === 0) g += `<text x="${pl + i * bw}" y="${H - 6}">${MONTH_LABELS[i]}</text>`;
+    }
+    document.getElementById('bars').innerHTML = g;
+  })();
+
+  const openStages = STAGES.filter((s) => s.p > 0 && s.p < 100);
+  const openTotal = sumBy(openStages, 'value');
+  document.getElementById('openTot').textContent = money(openTotal) + ' open';
+  document.getElementById('stack').innerHTML = openStages.map((s) =>
+    `<div title="${s.name}" style="width:${(s.value / openTotal) * 100}%;background:${COLORS[s.name]}"></div>`).join('');
+  document.getElementById('legend').innerHTML = openStages.map((s) =>
+    `<span><i class="sw" style="background:${COLORS[s.name]}"></i>${s.name}</span><span class="v">${money(s.value)}</span><span class="e">${money(s.expected)}</span>`).join('');
+
+  const fu = FOLLOW_UPS.map((f) => ({ ...f, d: parseDate(f.due) })).sort((a, b) => a.d - b.d);
+  document.getElementById('fu').innerHTML = fu.map((f) => {
+    const late = f.d < TODAY;
+    return `<li><div>${f.title}<div class="m">${f.who} · ${shortDate(f.d)}</div></div><span class="pill ${late ? 'late' : 'soon'}">${late ? 'OVERDUE' : 'UPCOMING'}</span></li>`;
+  }).join('');
+  document.getElementById('recent').innerHTML = RECENT.map((r) => `<li><div>${r.text}<div class="m">${r.when}</div></div></li>`).join('');
+
+  const lateDeals = DEALS.filter((d) => d.late).sort((a, b) => a.expected - b.expected);
+  document.getElementById('lateN').textContent = lateDeals.length + ' open past close';
+  document.getElementById('late').innerHTML = lateDeals.map((d) =>
+    `<li><div>${esc(d.name)}<div class="m">${d.stage} · ${money(d.value)}</div></div><span class="m" style="color:#EF476F">${shortDate(d.expected)}</span></li>`).join('');
+
+  document.getElementById('boardTot').textContent = money(SUMMARY.openValue) + ' open · ' + money(SUMMARY.openExpected) + ' expected';
+  document.getElementById('columns').innerHTML = STAGES.map((s) => {
+    const isOpen = s.p > 0 && s.p < 100;
+    const totals = isOpen
+      ? `<strong>${money(s.value)}</strong><br>${money(s.expected)} exp.`
+      : `<strong>${money(s.value)}</strong>`;
+    const items = s.deals.slice().sort((a, b) => b.value - a.value).map((d) => `
+      <div class="item">
+        <div class="n">${esc(d.name)}</div>
+        <div class="o">${esc(d.org)}</div>
+        <div class="r"><span>${money(d.value)}</span><span>${d.open ? d.p + '%' : ''}</span></div>
+        <div class="r"><span class="${d.late ? 'late' : ''}">${shortDate(d.expected)}</span>${d.late ? '<span class="lt">Late</span>' : ''}</div>
+      </div>`).join('');
+    return `<div class="column">
+      <div class="ch">
+        <div class="t"><i style="background:${COLORS[s.name]}"></i>${s.name}<b>${s.deals.length}</b></div>
+        <div class="s">${totals}</div>
+      </div>
+      ${items}
+    </div>`;
+  }).join('');
+</script>
+</body>
+</html>

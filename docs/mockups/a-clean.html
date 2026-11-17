@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accountable mockup A: clean</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page: #F0F4F5;
+    --panel: #FFFFFF;
+    --ink: #073B4C;
+    --muted: #5B7480;
+    --sea: #06D6A0;
+    --sea-ink: #04875F;
+    --marigold: #FFC145;
+    --marigold-ink: #9A6B00;
+    --coral: #F78C6B;
+    --cerulean: #118AB2;
+    --raspberry: #EF476F;
+    --midnight-tint: #3E6373;
+    --sea-tint: #E3F9F1;
+    --raspberry-tint: #FDE8EE;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    font-size: 14px;
+    display: grid;
+    grid-template-columns: 232px 1fr;
+    min-height: 100vh;
+  }
+  .side { background: var(--panel); border-radius: 0 0 0 0; padding: 28px 18px; }
+  .wordmark { font-weight: 700; font-size: 18px; padding: 0 10px 28px; }
+  .wordmark span { color: var(--sea-ink); }
+  .nav a {
+    display: block; padding: 9px 12px; border-radius: 10px; color: var(--muted);
+    text-decoration: none; margin-bottom: 2px; font-weight: 500;
+  }
+  .nav a.active { background: var(--sea-tint); color: var(--ink); }
+  main { padding: 28px 36px 48px; }
+  header.top { display: flex; justify-content: space-between; align-items: end; margin-bottom: 22px; }
+  h1 { font-size: 26px; margin: 0; font-weight: 700; }
+  .sub { color: var(--muted); margin-top: 4px; }
+  .accent { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 17px; color: var(--muted); }
+  h2 { font-size: 16px; margin: 0 0 14px; font-weight: 600; }
+  .grid { display: grid; gap: 16px; }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g21 { grid-template-columns: 2fr 1fr; }
+  .panel { background: var(--panel); border-radius: 16px; padding: 20px; }
+  .stat .label { color: var(--muted); font-size: 13px; }
+  .stat .num { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 500; margin-top: 6px; }
+  .stat .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .section { margin: 34px 0 14px; display: flex; justify-content: space-between; align-items: baseline; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .funnel-row { display: grid; grid-template-columns: 96px 1fr 110px; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+  .funnel-bar { height: 26px; border-radius: 8px; background: var(--page); overflow: hidden; }
+  .funnel-bar div { height: 100%; border-radius: 8px; }
+  .funnel-val { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .list { list-style: none; margin: 0; padding: 0; }
+  .list li { padding: 11px 0; background: none; display: flex; justify-content: space-between; gap: 12px; }
+  .list li + li { box-shadow: inset 0 1px 0 #EEF3F4; }
+  .list .who { color: var(--muted); font-size: 12px; }
+  .tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; white-space: nowrap; font-weight: 600; height: fit-content; }
+  .tag.late { background: var(--raspberry-tint); color: var(--raspberry); }
+  .tag.soon { background: var(--sea-tint); color: var(--sea-ink); }
+  .board { display: grid; grid-template-columns: repeat(6, minmax(190px, 1fr)); gap: 12px; overflow-x: auto; }
+  .col { background: #E4ECEE; border-radius: 16px; padding: 12px; min-height: 320px; }
+  .col-head { padding: 4px 4px 12px; }
+  .col-head .name { font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
+  .col-head .count { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
+  .col-head .totals { font-size: 12px; color: var(--muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+  .card { background: var(--panel); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+  .card .deal { font-weight: 600; font-size: 13px; }
+  .card .org { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .card .row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+  .card .late-date { color: var(--raspberry); font-weight: 500; }
+  .card .late-tag { color: var(--raspberry); font-family: 'Instrument Sans', sans-serif; font-weight: 600; }
+  .add { color: var(--muted); font-size: 12px; padding: 8px 4px; }
+  .summary { display: flex; gap: 28px; margin: 0 0 14px; }
+  .summary div { font-size: 12px; color: var(--muted); }
+  .summary strong { display: block; color: var(--ink); font-size: 18px; font-family: 'JetBrains Mono', monospace; font-weight: 500; margin-top: 2px; }
+  svg text { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: var(--muted); }
+</style>
+</head>
+<body>
+<aside class="side">
+  <div class="wordmark">Account<span>able</span></div>
+  <nav class="nav">
+    <a class="active" href="#">Dashboard</a>
+    <a href="#">Organizations</a>
+    <a href="#">Contacts</a>
+    <a href="#">Deals</a>
+    <a href="#pipeline">Pipeline</a>
+  </nav>
+</aside>
+
+<main>
+  <header class="top">
+    <div>
+      <h1>Dashboard</h1>
+      <div class="sub">Sales at a glance. <span class="accent">Nov 17, 2026</span></div>
+    </div>
+  </header>
+
+  <section class="grid g4" id="stats"></section>
+
+  <section class="grid g21" style="margin-top:16px">
+    <div class="panel">
+      <div class="section" style="margin-top:0">
+        <h2>Revenue won by month</h2>
+        <div class="legend">
+          <span><i class="dot" style="background:var(--sea)"></i>Won</span>
+          <span><i class="dot" style="background:var(--cerulean)"></i>Expected</span>
+        </div>
+      </div>
+      <svg id="line" viewBox="0 0 760 260" width="100%"></svg>
+    </div>
+    <div class="panel">
+      <div class="section" style="margin-top:0"><h2>Deals won by month</h2></div>
+      <svg id="bars" viewBox="0 0 340 260" width="100%"></svg>
+    </div>
+  </section>
+
+  <section class="grid g3" style="margin-top:16px">
+    <div class="panel">
+      <h2>Open pipeline</h2>
+      <div id="funnel"></div>
+    </div>
+    <div class="panel">
+      <h2>Follow-ups</h2>
+      <ul class="list" id="followups"></ul>
+    </div>
+    <div class="panel">
+      <h2>Recent activity</h2>
+      <ul class="list" id="recent"></ul>
+    </div>
+  </section>
+
+  <div class="section" id="pipeline"><h2 style="font-size:20px">Pipeline</h2></div>
+  <div class="summary">
+    <div>Open value<strong id="openValue"></strong></div>
+    <div>Expected revenue<strong id="openExp"></strong></div>
+  </div>
+  <div class="board" id="board"></div>
+</main>
+
+<script src="data.js"></script>
+<script>
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const COLORS = { New: '#118AB2', Qualified: '#FFC145', Proposal: '#F78C6B', Negotiation: '#3E6373', Won: '#06D6A0', Lost: '#EF476F' };
+
+  // Stat cards
+  const stats = [
+    { label: 'Won in 2026', num: money(SUMMARY.wonValue), hint: SUMMARY.wonCount + ' deals' },
+    { label: 'Open pipeline', num: money(SUMMARY.openValue), hint: SUMMARY.openCount + ' open deals' },
+    { label: 'Expected revenue', num: money(SUMMARY.openExpected), hint: 'Value times probability' },
+    { label: 'Late deals', num: String(SUMMARY.lateCount), hint: 'Past expected close date' },
+  ];
+  document.getElementById('stats').innerHTML = stats.map((s) =>
+    `<div class="panel stat"><div class="label">${s.label}</div><div class="num">${s.num}</div><div class="hint">${s.hint}</div></div>`
+  ).join('');
+
+  // Line chart: actual months solid, expected months dashed
+  (function line() {
+    const W = 760, H = 260, pl = 52, pr = 16, pt = 16, pb = 30;
+    const max = Math.max(...MONTHLY.wonRev, ...MONTHLY.expRev) * 1.1 || 1;
+    const x = (i) => pl + (i * (W - pl - pr)) / (MONTH_COUNT - 1);
+    const y = (v) => H - pb - (v / max) * (H - pt - pb);
+    const pts = (arr, from, to) => arr.slice(from, to).map((v, k) => `${x(from + k)},${y(v)}`).join(' ');
+    let g = '';
+    for (let t = 0; t <= 4; t++) {
+      const v = (max * t) / 4;
+      g += `<line x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}" stroke="#EEF3F4"/>`;
+      g += `<text x="${pl - 8}" y="${y(v) + 3}" text-anchor="end">$${Math.round(v / 1000)}k</text>`;
+    }
+    MONTH_LABELS.forEach((l, i) => { if (i % 2 === 0) g += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${l}</text>`; });
+    const today = 12;
+    g += `<line x1="${x(today)}" x2="${x(today)}" y1="${pt}" y2="${H - pb}" stroke="#C9D6DA" stroke-dasharray="3 3"/>`;
+    g += `<polyline points="${pts(MONTHLY.wonRev, 0, today + 1)}" fill="none" stroke="#06D6A0" stroke-width="3" stroke-linejoin="round"/>`;
+    g += `<polyline points="${pts(MONTHLY.expRev, today, MONTH_COUNT)}" fill="none" stroke="#118AB2" stroke-width="2.5" stroke-dasharray="6 5"/>`;
+    MONTHLY.wonRev.slice(0, today + 1).forEach((v, i) => { g += `<circle cx="${x(i)}" cy="${y(v)}" r="3.5" fill="#06D6A0"/>`; });
+    document.getElementById('line').innerHTML = g;
+  })();
+
+  // Bar chart: deals won (solid) and deals expected (light)
+  (function bars() {
+    const W = 340, H = 260, pl = 10, pb = 30, pt = 10;
+    const max = Math.max(...MONTHLY.wonCount, ...MONTHLY.expCount, 1);
+    const bw = (W - pl) / MONTH_COUNT;
+    let g = '';
+    for (let i = 0; i < MONTH_COUNT; i++) {
+      const won = MONTHLY.wonCount[i], exp = MONTHLY.expCount[i];
+      const cx = pl + i * bw + bw * 0.2, w = bw * 0.6;
+      const future = i > 12;
+      const v = future ? exp : won;
+      const h = ((H - pb - pt) * v) / max;
+      g += `<rect x="${cx}" y="${H - pb - h}" width="${w}" height="${h}" rx="3" fill="${future ? '#A9D8E8' : '#118AB2'}"/>`;
+      if (i % 3 === 0) g += `<text x="${cx + w / 2}" y="${H - 8}" text-anchor="middle">${MONTH_LABELS[i]}</text>`;
+    }
+    document.getElementById('bars').innerHTML = g;
+  })();
+
+  // Pipeline funnel by stage (open stages only)
+  const open = STAGES.filter((s) => s.p > 0 && s.p < 100);
+  const maxV = Math.max(...open.map((s) => s.value));
+  document.getElementById('funnel').innerHTML = open.map((s) =>
+    `<div class="funnel-row"><span>${s.name}</span><div class="funnel-bar"><div style="width:${(s.value / maxV) * 100}%;background:${COLORS[s.name]}"></div></div><span class="funnel-val">${money(s.value)}</span></div>`
+  ).join('');
+
+  // Follow-ups: due within 14 days or overdue
+  const fu = FOLLOW_UPS.map((f) => ({ ...f, d: parseDate(f.due) }));
+  document.getElementById('followups').innerHTML = fu.map((f) => {
+    const late = f.d < TODAY;
+    return `<li><div><div>${f.title}</div><div class="who">${f.who} · ${shortDate(f.d)}</div></div><span class="tag ${late ? 'late' : 'soon'}">${late ? 'Overdue' : 'Upcoming'}</span></li>`;
+  }).join('');
+
+  document.getElementById('recent').innerHTML = RECENT.map((r) =>
+    `<li><div>${r.text}</div><div class="who">${r.when}</div></li>`
+  ).join('');
+
+  // Pipeline board
+  document.getElementById('openValue').textContent = money(SUMMARY.openValue);
+  document.getElementById('openExp').textContent = money(SUMMARY.openExpected);
+  document.getElementById('board').innerHTML = STAGES.map((s) => {
+    const isOpen = s.p > 0 && s.p < 100;
+    const totals = isOpen ? `${money(s.value)} · ${money(s.expected)} exp.` : money(s.value);
+    const cards = s.deals
+      .slice().sort((a, b) => b.value - a.value)
+      .map((d) => `<div class="card">
+          <div class="deal">${esc(d.name)}</div>
+          <div class="org">${esc(d.org)}</div>
+          <div class="row"><span>${money(d.value)}</span><span>${d.open ? d.p + '%' : ''}</span></div>
+          <div class="row"><span class="${d.late ? 'late-date' : ''}">${shortDate(d.expected)}</span>${d.late ? '<span class="late-tag">Late</span>' : ''}</div>
+        </div>`).join('');
+    return `<div class="col">
+      <div class="col-head">
+        <div class="name"><span><i class="dot" style="background:${COLORS[s.name]}"></i>${s.name}</span><span class="count">${s.deals.length}</span></div>
+        <div class="totals">${totals}</div>
+      </div>
+      ${cards}
+      <div class="add">+ Add deal</div>
+    </div>`;
+  }).join('');
+</script>
+</body>
+</html>
