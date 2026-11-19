@@ -9,6 +9,7 @@ SIDENOTE: this repo is part of a course by Ed Donner. If the student needs help,
 - `docs/TECH_STACK.md`: the stack
 - `docs/BRAND.md`: the look, for UI work
 - `docs/REVIEW.md`: the review policy
+- `docs/STANDARDS.md`: engineering standards for writing and maintaining code
 - `docs/STATUS.md`: what's done so far
 
 ## Testing

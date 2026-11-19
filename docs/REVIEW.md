@@ -1,4 +1,3 @@
-```markdown
 # Review policy
 
 Every change is reviewed against this policy before it merges. The reviewer reports its findings and doesn't change any code.
@@ -11,6 +10,7 @@ Make a separate pass over every change for each of these:
 - **Security:** no secrets or personal data are exposed, and nobody can do what they shouldn't.
 - **Matches spec.md and plan.md:** the change does what those documents say, with nothing missing and nothing extra.
 - **Undocumented code:** flag any code that spec.md doesn't describe, so the change updates spec.md too.
+- **Standards:** the change follows docs/STANDARDS.md.
 
 ## Important
 
@@ -19,4 +19,3 @@ An Important finding must be fixed before the change merges. A finding is Import
 ## Nits
 
 A nit is a small point, such as style or naming, that doesn't block the merge. Report at most five per review.
-```
