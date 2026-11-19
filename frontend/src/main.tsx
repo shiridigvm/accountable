@@ -5,6 +5,7 @@ import App from './App';
 import './fonts';
 import './styles.css';
 
+//const apiKey = "sk-jhsgdfjsgdfhjgsjhdfghsjagdfhjsagfhjsgfjhsdgfhjgs";
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
