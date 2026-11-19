@@ -23,7 +23,8 @@
     "build": "npm run build -w frontend"
   },
   "devDependencies": {
-    "concurrently": "^10.0.7"
+    "concurrently": "^10.0.7",
+    "lefthook": "^2.2.2"
   },
   "overrides": {
     "eslint-plugin-jsx-a11y": {
