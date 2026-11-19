@@ -1,7 +1,10 @@
 // Money and dates in US style (R30, R31). Dates arrive as YYYY-MM-DD and are read as local dates,
 // so a date never shifts by a day.
 
-const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const money = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
 
 export function formatMoney(cents: number): string {
   return money.format(cents / 100);

@@ -18,7 +18,13 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { api, errorMessage } from '../api/client';
-import type { Board, BoardColumn, BoardDeal, Contact, Organization } from '../api/types';
+import type {
+  Board,
+  BoardColumn,
+  BoardDeal,
+  Contact,
+  Organization,
+} from '../api/types';
 import { useResource } from '../api/useResource';
 import { FormDialog } from '../components/FormDialog';
 import { moveDealLocally, findColumn } from '../lib/board';
@@ -28,19 +34,22 @@ import { fieldsFor, toBody, toInitial } from './Deals';
 
 // Keyboard moves: up and down move one card place, left and right move to the next column.
 // The step is the card size plus the gap between cards and columns.
-const keyboardCoordinates: KeyboardCoordinateGetter = (event, { currentCoordinates, context }) => {
+const keyboardCoordinates: KeyboardCoordinateGetter = (
+  event,
+  { currentCoordinates, context },
+) => {
   const rect = context.collisionRect;
   if (!rect) return undefined;
   const down = rect.height + 8;
   const across = rect.width + 36;
   switch (event.code) {
-    case "ArrowDown":
+    case 'ArrowDown':
       return { x: currentCoordinates.x, y: currentCoordinates.y + down };
-    case "ArrowUp":
+    case 'ArrowUp':
       return { x: currentCoordinates.x, y: currentCoordinates.y - down };
-    case "ArrowLeft":
+    case 'ArrowLeft':
       return { x: currentCoordinates.x - across, y: currentCoordinates.y };
-    case "ArrowRight":
+    case 'ArrowRight':
       return { x: currentCoordinates.x + across, y: currentCoordinates.y };
     default:
       return undefined;
@@ -79,7 +88,9 @@ export default function Pipeline() {
     let position: number;
     if (overId.startsWith('column-')) {
       stage = overId.slice('column-'.length) as Stage;
-      const others = board.columns.find((c) => c.stage === stage)!.deals.filter((d) => d.id !== dealId);
+      const others = board.columns
+        .find((c) => c.stage === stage)!
+        .deals.filter((d) => d.id !== dealId);
       position = others.length;
     } else {
       const overDealId = Number(overId.replace('deal-', ''));
@@ -91,7 +102,9 @@ export default function Pipeline() {
         position = target.deals.findIndex((d) => d.id === overDealId);
         if (position === source.deals.findIndex((d) => d.id === dealId)) return;
       } else {
-        position = target.deals.filter((d) => d.id !== dealId).findIndex((d) => d.id === overDealId);
+        position = target.deals
+          .filter((d) => d.id !== dealId)
+          .findIndex((d) => d.id === overDealId);
       }
     }
     if (stage === source.stage && overId.startsWith('column-')) return;
@@ -114,7 +127,12 @@ export default function Pipeline() {
     serverBoard.reload();
   }
 
-  if (serverBoard.error) return <p className="form-error" role="alert">{serverBoard.error}</p>;
+  if (serverBoard.error)
+    return (
+      <p className="form-error" role="alert">
+        {serverBoard.error}
+      </p>
+    );
   if (!board) return <p className="empty">Loading…</p>;
 
   return (
@@ -122,14 +140,17 @@ export default function Pipeline() {
       <div className="pipe-head">
         <div>
           <h1>Pipeline</h1>
-          <p className="subtitle">Drag a deal to another stage, or within a stage to change its place.</p>
+          <p className="subtitle">
+            Drag a deal to another stage, or within a stage to change its place.
+          </p>
         </div>
         <div className="board-totals">
           <span>
             Open value <strong>{formatMoney(board.open_value_cents)}</strong>
           </span>
           <span>
-            Expected revenue <strong>{formatMoney(board.open_expected_cents)}</strong>
+            Expected revenue{' '}
+            <strong>{formatMoney(board.open_expected_cents)}</strong>
           </span>
         </div>
       </div>
@@ -138,10 +159,18 @@ export default function Pipeline() {
           {error}
         </p>
       )}
-      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={onDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragEnd={onDragEnd}
+      >
         <div className="board">
           {board.columns.map((column) => (
-            <Column key={column.stage} column={column} onAdd={() => setAddingIn(column.stage)} />
+            <Column
+              key={column.stage}
+              column={column}
+              onAdd={() => setAddingIn(column.stage)}
+            />
           ))}
         </div>
       </DndContext>
@@ -167,7 +196,10 @@ function Column({ column, onAdd }: { column: BoardColumn; onAdd: () => void }) {
   const { setNodeRef, isOver } = useDroppable({ id: columnId(column.stage) });
   const isOpen = column.open;
   return (
-    <section className={`column${isOver ? ' over' : ''}`} aria-label={`${column.stage} column`}>
+    <section
+      className={`column${isOver ? ' over' : ''}`}
+      aria-label={`${column.stage} column`}
+    >
       <header className="column-head">
         <div className="column-name">
           <i style={{ background: STAGE_COLORS[column.stage] }} />
@@ -177,17 +209,24 @@ function Column({ column, onAdd }: { column: BoardColumn; onAdd: () => void }) {
         <div className="column-totals">
           <div>{formatMoney(column.value_cents)}</div>
           {isOpen && column.expected_cents !== null && (
-            <div className="muted">{formatMoney(column.expected_cents)} expected</div>
+            <div className="muted">
+              {formatMoney(column.expected_cents)} expected
+            </div>
           )}
         </div>
       </header>
       <div ref={setNodeRef} className="card-list">
-        <SortableContext items={column.deals.map((d) => cardId(d.id))} strategy={verticalListSortingStrategy}>
+        <SortableContext
+          items={column.deals.map((d) => cardId(d.id))}
+          strategy={verticalListSortingStrategy}
+        >
           {column.deals.map((deal) => (
             <Card key={deal.id} deal={deal} />
           ))}
         </SortableContext>
-        {column.deals.length === 0 && <p className="empty small">No deals in {column.stage}.</p>}
+        {column.deals.length === 0 && (
+          <p className="empty small">No deals in {column.stage}.</p>
+        )}
       </div>
       <button type="button" className="add-deal" onClick={onAdd}>
         + Add deal
@@ -197,7 +236,14 @@ function Column({ column, onAdd }: { column: BoardColumn; onAdd: () => void }) {
 }
 
 function Card({ deal }: { deal: BoardDeal }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: cardId(deal.id),
   });
   const style: CSSProperties = {
@@ -206,19 +252,32 @@ function Card({ deal }: { deal: BoardDeal }) {
     opacity: isDragging ? 0.6 : 1,
   };
   return (
-    <article ref={setNodeRef} style={style} className="card" {...attributes} {...listeners}>
+    <article
+      ref={setNodeRef}
+      style={style}
+      className="card"
+      {...attributes}
+      {...listeners}
+    >
       <div className="card-name">
-        <Link to={`/deals/${deal.id}`} onPointerDown={(event) => event.stopPropagation()}>
+        <Link
+          to={`/deals/${deal.id}`}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
           {deal.name}
         </Link>
       </div>
-      {deal.organization_name && <div className="muted small">{deal.organization_name}</div>}
+      {deal.organization_name && (
+        <div className="muted small">{deal.organization_name}</div>
+      )}
       <div className="card-row">
         <span>{formatMoney(deal.value_cents)}</span>
         <span>{formatPercent(deal.probability)}</span>
       </div>
       <div className="card-row">
-        <span className={deal.late ? 'late-text' : 'muted'}>{formatDate(deal.expected_close)}</span>
+        <span className={deal.late ? 'late-text' : 'muted'}>
+          {formatDate(deal.expected_close)}
+        </span>
         {deal.late && <span className="tag">Late</span>}
       </div>
     </article>

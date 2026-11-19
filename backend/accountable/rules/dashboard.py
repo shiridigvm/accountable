@@ -21,7 +21,7 @@ def month_window(today: date) -> list[str]:
 
 def monthly_series(today: date, deals: list[dict]) -> list[dict]:
     """Won deals by actual close month. Open deals by expected close month."""
-    series = {
+    series: dict[str, dict] = {
         label: {
             "month": label,
             "won_count": 0,

@@ -13,5 +13,12 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**'],
+      // Line coverage gate for `npm test`. Vitest exits non-zero below this.
+      thresholds: { lines: 80 },
+    },
   },
 });

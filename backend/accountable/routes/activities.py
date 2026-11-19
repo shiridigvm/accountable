@@ -35,7 +35,9 @@ def create_activity(body: ActivityIn, request: Request):
         if data["deal_id"] is not None:
             require(store.raw_deal(conn, data["deal_id"]), "Deal", data["deal_id"])
         activity_id = store.insert_activity(conn, data)
-        return activity_entry(store.get_activity(conn, activity_id))
+        return activity_entry(
+            require(store.get_activity(conn, activity_id), "Activity", activity_id)
+        )
 
 
 @router.patch("/{activity_id}")
@@ -43,7 +45,9 @@ def update_activity(activity_id: int, body: ActivityPatch, request: Request):
     with engine_of(request).begin() as conn:
         require(store.get_activity(conn, activity_id), "Activity", activity_id)
         store.update_activity(conn, activity_id, body.model_dump(exclude_unset=True))
-        return activity_entry(store.get_activity(conn, activity_id))
+        return activity_entry(
+            require(store.get_activity(conn, activity_id), "Activity", activity_id)
+        )
 
 
 @router.delete("/{activity_id}", status_code=204)

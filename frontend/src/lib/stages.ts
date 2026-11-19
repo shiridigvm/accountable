@@ -1,9 +1,21 @@
 // The six fixed stages (R7) with their column colors from the brand skill.
 
-export const STAGES = ['New', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost'] as const;
+export const STAGES = [
+  'New',
+  'Qualified',
+  'Proposal',
+  'Negotiation',
+  'Won',
+  'Lost',
+] as const;
 export type Stage = (typeof STAGES)[number];
 
-export const OPEN_STAGES: readonly Stage[] = ['New', 'Qualified', 'Proposal', 'Negotiation'];
+export const OPEN_STAGES: readonly Stage[] = [
+  'New',
+  'Qualified',
+  'Proposal',
+  'Negotiation',
+];
 
 export const STAGE_COLORS: Record<Stage, string> = {
   New: '#118ab2',

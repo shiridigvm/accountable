@@ -44,7 +44,9 @@ describe('FormDialog validation', () => {
   it('rejects a negative value', async () => {
     const { onSave } = setup();
     await userEvent.type(screen.getByLabelText(/Name/), 'Ana');
-    fireEvent.change(screen.getByLabelText('Value'), { target: { value: '-5' } });
+    fireEvent.change(screen.getByLabelText('Value'), {
+      target: { value: '-5' },
+    });
     await userEvent.click(screen.getByRole('button', { name: 'Add' }));
     expect(screen.getByText('Value must be 0 or more.')).toBeInTheDocument();
     expect(onSave).not.toHaveBeenCalled();
@@ -54,16 +56,26 @@ describe('FormDialog validation', () => {
     const { onSave, onClose } = setup();
     await userEvent.type(screen.getByLabelText(/Name/), 'Ana');
     await userEvent.click(screen.getByRole('button', { name: 'Add' }));
-    await waitFor(() => expect(onSave).toHaveBeenCalledWith({ name: 'Ana', email: '', value: '' }));
+    await waitFor(() =>
+      expect(onSave).toHaveBeenCalledWith({
+        name: 'Ana',
+        email: '',
+        value: '',
+      }),
+    );
     expect(onClose).toHaveBeenCalled();
   });
 
   it('shows a server error and keeps the dialog open', async () => {
     const { ApiError } = await import('../api/client');
-    const { onClose } = setup(vi.fn().mockRejectedValue(new ApiError('Name is taken.', 422)));
+    const { onClose } = setup(
+      vi.fn().mockRejectedValue(new ApiError('Name is taken.', 422)),
+    );
     await userEvent.type(screen.getByLabelText(/Name/), 'Ana');
     await userEvent.click(screen.getByRole('button', { name: 'Add' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Name is taken.');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Name is taken.',
+    );
     expect(onClose).not.toHaveBeenCalledWith();
   });
 });

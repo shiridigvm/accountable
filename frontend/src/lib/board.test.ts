@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import type { Board, BoardDeal } from '../api/types';
 import { moveDealLocally } from './board';
 
-function deal(id: number, stage: string, late: boolean, position: number): BoardDeal {
+function deal(
+  id: number,
+  stage: string,
+  late: boolean,
+  position: number,
+): BoardDeal {
   return {
     id,
     name: `Deal ${id}`,
@@ -28,7 +33,9 @@ function board(): Board {
     open,
     count: deals.length,
     value_cents: deals.reduce((s, d) => s + d.value_cents, 0),
-    expected_cents: open ? deals.reduce((s, d) => s + d.expected_cents, 0) : null,
+    expected_cents: open
+      ? deals.reduce((s, d) => s + d.expected_cents, 0)
+      : null,
     deals,
   });
   return {
@@ -44,11 +51,15 @@ function board(): Board {
 describe('moveDealLocally', () => {
   it('clears the late flag when a late deal is dropped in Won', () => {
     const moved = moveDealLocally(board(), 1, 'Won', 0);
-    expect(moved.columns.find((c) => c.stage === 'Won')!.deals[0].late).toBe(false);
+    expect(moved.columns.find((c) => c.stage === 'Won')!.deals[0].late).toBe(
+      false,
+    );
   });
 
   it('keeps the late flag when a late deal stays in an open stage', () => {
     const moved = moveDealLocally(board(), 1, 'New', 0);
-    expect(moved.columns.find((c) => c.stage === 'New')!.deals[0].late).toBe(true);
+    expect(moved.columns.find((c) => c.stage === 'New')!.deals[0].late).toBe(
+      true,
+    );
   });
 });

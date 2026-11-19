@@ -19,7 +19,14 @@ type Props<T> = {
 };
 
 // Sortable, searchable table. Clicking a heading sorts by that column.
-export function DataTable<T>({ label, data, columns, searchLabel, toolbar, emptyText }: Props<T>) {
+export function DataTable<T>({
+  label,
+  data,
+  columns,
+  searchLabel,
+  toolbar,
+  emptyText,
+}: Props<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [filter, setFilter] = useState('');
   // The React Compiler cannot memoize TanStack Table and skips this component. That is expected.
@@ -62,7 +69,13 @@ export function DataTable<T>({ label, data, columns, searchLabel, toolbar, empty
                   return (
                     <th
                       key={header.id}
-                      aria-sort={sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : 'none'}
+                      aria-sort={
+                        sorted === 'asc'
+                          ? 'ascending'
+                          : sorted === 'desc'
+                            ? 'descending'
+                            : 'none'
+                      }
                     >
                       {header.isPlaceholder ? null : header.column.getCanSort() ? (
                         <button
@@ -70,11 +83,23 @@ export function DataTable<T>({ label, data, columns, searchLabel, toolbar, empty
                           className="sort-button"
                           onClick={header.column.getToggleSortingHandler()}
                         >
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                          <span aria-hidden="true">{sorted === 'asc' ? ' ▲' : sorted === 'desc' ? ' ▼' : ''}</span>
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                          <span aria-hidden="true">
+                            {sorted === 'asc'
+                              ? ' ▲'
+                              : sorted === 'desc'
+                                ? ' ▼'
+                                : ''}
+                          </span>
                         </button>
                       ) : (
-                        flexRender(header.column.columnDef.header, header.getContext())
+                        flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )
                       )}
                     </th>
                   );
@@ -86,13 +111,19 @@ export function DataTable<T>({ label, data, columns, searchLabel, toolbar, empty
             {rows.map((row) => (
               <tr key={row.id}>
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                  <td key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
                 ))}
               </tr>
             ))}
           </tbody>
         </table>
-        {rows.length === 0 && <p className="empty">{data.length === 0 ? emptyText : 'No matches for this search.'}</p>}
+        {rows.length === 0 && (
+          <p className="empty">
+            {data.length === 0 ? emptyText : 'No matches for this search.'}
+          </p>
+        )}
       </div>
     </div>
   );

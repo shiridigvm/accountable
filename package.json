@@ -8,15 +8,26 @@
   "scripts": {
     "dev": "concurrently -n api,web -c blue,green \"uv run -m uvicorn accountable.main:app --host 127.0.0.1 --port 8000 --reload --reload-dir backend/accountable\" \"npm run dev -w frontend\"",
     "seed": "uv run -m accountable.seed",
+    "format": "npm run format -w frontend && uv run -m ruff format backend",
+    "format:check": "npm run format:check -w frontend && uv run -m ruff format --check backend",
     "test": "npm run test:backend && npm run test:unit && npm run test:e2e",
-    "test:backend": "uv run -m pytest backend/tests",
+    "test:backend": "uv run -m pytest backend/tests --cov",
     "test:unit": "npm run test -w frontend",
     "test:e2e": "npm run test -w e2e",
-    "typecheck": "npm run typecheck -w frontend",
+    "typecheck": "npm run typecheck -w frontend && uv run -m ty check backend",
     "lint": "npm run lint -w frontend && uv run -m ruff check backend",
+    "secrets": "gitleaks dir . -c .gitleaks.toml --no-banner && gitleaks git . -c .gitleaks.toml --no-banner",
+    "check:static": "npm run format:check && npm run lint && npm run typecheck && npm run secrets",
+    "check:quick": "npm run check:static && npm run test:backend && npm run test:unit",
+    "check": "npm run check:static && npm test",
     "build": "npm run build -w frontend"
   },
   "devDependencies": {
     "concurrently": "^10.0.7"
+  },
+  "overrides": {
+    "eslint-plugin-jsx-a11y": {
+      "eslint": "$eslint"
+    }
   }
 }

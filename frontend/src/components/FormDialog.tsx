@@ -23,8 +23,36 @@ type Props = {
   validate?: (values: Record<string, string>) => Record<string, string>;
 };
 
+function numberError(field: FieldSpec, value: string): string | undefined {
+  const number = Number(value);
+  if (Number.isNaN(number)) return `${field.label} must be a number.`;
+  if (field.min !== undefined && number < field.min)
+    return `${field.label} must be ${field.min} or more.`;
+  if (field.max !== undefined && number > field.max)
+    return `${field.label} must be ${field.max} or less.`;
+  return undefined;
+}
+
+// The error message for one trimmed field value, or undefined when it is valid.
+function fieldError(field: FieldSpec, value: string): string | undefined {
+  if (value === '')
+    return field.required ? `${field.label} is required.` : undefined;
+  if (field.kind === 'email' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value))
+    return 'Enter an email address, such as name@example.com.';
+  if (field.kind === 'number') return numberError(field, value);
+  return undefined;
+}
+
 // Native dialog: it traps focus, closes on Escape, and returns focus to the button that opened it.
-export function FormDialog({ title, fields, initial, submitLabel, onSave, onClose, validate }: Props) {
+export function FormDialog({
+  title,
+  fields,
+  initial,
+  submitLabel,
+  onSave,
+  onClose,
+  validate,
+}: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const [values, setValues] = useState<Record<string, string>>(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -44,17 +72,8 @@ export function FormDialog({ title, fields, initial, submitLabel, onSave, onClos
   function checkRequired(): Record<string, string> {
     const found: Record<string, string> = {};
     for (const field of fields) {
-      const value = (values[field.name] ?? '').trim();
-      if (field.required && value === '') found[field.name] = `${field.label} is required.`;
-      if (field.kind === 'email' && value !== '' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)) {
-        found[field.name] = 'Enter an email address, such as name@example.com.';
-      }
-      if (field.kind === 'number' && value !== '') {
-        const number = Number(value);
-        if (Number.isNaN(number)) found[field.name] = `${field.label} must be a number.`;
-        else if (field.min !== undefined && number < field.min) found[field.name] = `${field.label} must be ${field.min} or more.`;
-        else if (field.max !== undefined && number > field.max) found[field.name] = `${field.label} must be ${field.max} or less.`;
-      }
+      const message = fieldError(field, (values[field.name] ?? '').trim());
+      if (message) found[field.name] = message;
     }
     return { ...found, ...(validate ? validate(values) : {}) };
   }
@@ -70,13 +89,20 @@ export function FormDialog({ title, fields, initial, submitLabel, onSave, onClos
       await onSave(values);
       onClose();
     } catch (error) {
-      setFormError(error instanceof ApiError ? error.message : errorMessage(error));
+      setFormError(
+        error instanceof ApiError ? error.message : errorMessage(error),
+      );
       setSaving(false);
     }
   }
 
   return (
-    <dialog ref={ref} className="dialog" aria-labelledby="dialog-title" onCancel={onClose}>
+    <dialog
+      ref={ref}
+      className="dialog"
+      aria-labelledby="dialog-title"
+      onCancel={onClose}
+    >
       <form onSubmit={submit} noValidate>
         <h2 id="dialog-title">{title}</h2>
         {fields.map((field) => {
@@ -88,7 +114,8 @@ export function FormDialog({ title, fields, initial, submitLabel, onSave, onClos
             value: values[field.name] ?? '',
             'aria-invalid': error ? true : undefined,
             'aria-describedby': error ? `${id}-error` : undefined,
-            onChange: (event: { target: { value: string } }) => set(field.name, event.target.value),
+            onChange: (event: { target: { value: string } }) =>
+              set(field.name, event.target.value),
           };
           return (
             <div className="field" key={field.name}>

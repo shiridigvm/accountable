@@ -16,14 +16,27 @@ const data: Row[] = [
 ];
 
 function namesInOrder() {
-  const rows = within(screen.getByRole('table', { name: 'Things' })).getAllByRole('row').slice(1);
+  const rows = within(screen.getByRole('table', { name: 'Things' }))
+    .getAllByRole('row')
+    .slice(1);
   return rows.map((row) => within(row).getAllByRole('cell')[0].textContent);
 }
 
 describe('DataTable', () => {
   it('filters rows with the search box', async () => {
-    render(<DataTable label="Things" searchLabel="Search things" data={data} columns={columns} emptyText="None" />);
-    await userEvent.type(screen.getByRole('searchbox', { name: 'Search things' }), 'alp');
+    render(
+      <DataTable
+        label="Things"
+        searchLabel="Search things"
+        data={data}
+        columns={columns}
+        emptyText="None"
+      />,
+    );
+    await userEvent.type(
+      screen.getByRole('searchbox', { name: 'Search things' }),
+      'alp',
+    );
     expect(namesInOrder()).toEqual(['Alpha']);
   });
 
@@ -37,13 +50,32 @@ describe('DataTable', () => {
       { name: 'Amelia', organization: null },
       { name: 'Bo', organization: 'Kestrel Ltd' },
     ];
-    render(<DataTable label="Things" searchLabel="Search things" data={orgData} columns={orgColumns} emptyText="None" />);
-    await userEvent.type(screen.getByRole('searchbox', { name: 'Search things' }), 'kestrel');
+    render(
+      <DataTable
+        label="Things"
+        searchLabel="Search things"
+        data={orgData}
+        columns={orgColumns}
+        emptyText="None"
+      />,
+    );
+    await userEvent.type(
+      screen.getByRole('searchbox', { name: 'Search things' }),
+      'kestrel',
+    );
     expect(namesInOrder()).toEqual(['Bo']);
   });
 
   it('sorts by a column when its heading is clicked, and back again', async () => {
-    render(<DataTable label="Things" searchLabel="Search things" data={data} columns={columns} emptyText="None" />);
+    render(
+      <DataTable
+        label="Things"
+        searchLabel="Search things"
+        data={data}
+        columns={columns}
+        emptyText="None"
+      />,
+    );
     await userEvent.click(screen.getByRole('button', { name: /Name/ }));
     expect(namesInOrder()).toEqual(['Alpha', 'Beta', 'Gamma']);
     await userEvent.click(screen.getByRole('button', { name: /Name/ }));
@@ -51,13 +83,32 @@ describe('DataTable', () => {
   });
 
   it('shows the empty message when there are no records', () => {
-    render(<DataTable label="Things" searchLabel="Search things" data={[]} columns={columns} emptyText="Nothing here" />);
+    render(
+      <DataTable
+        label="Things"
+        searchLabel="Search things"
+        data={[]}
+        columns={columns}
+        emptyText="Nothing here"
+      />,
+    );
     expect(screen.getByText('Nothing here')).toBeInTheDocument();
   });
 
   it('says so when a search matches nothing', async () => {
-    render(<DataTable label="Things" searchLabel="Search things" data={data} columns={columns} emptyText="None" />);
-    await userEvent.type(screen.getByRole('searchbox', { name: 'Search things' }), 'zzz');
+    render(
+      <DataTable
+        label="Things"
+        searchLabel="Search things"
+        data={data}
+        columns={columns}
+        emptyText="None"
+      />,
+    );
+    await userEvent.type(
+      screen.getByRole('searchbox', { name: 'Search things' }),
+      'zzz',
+    );
     expect(screen.getByText('No matches for this search.')).toBeInTheDocument();
   });
 });

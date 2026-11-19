@@ -14,13 +14,20 @@ export default function DealDetail() {
   const { id } = useParams();
   const dealId = Number(id);
   const deal = useResource<Deal>(`/api/deals/${dealId}`);
-  const timeline = useResource<TimelineEntry[]>(`/api/deals/${dealId}/timeline`);
+  const timeline = useResource<TimelineEntry[]>(
+    `/api/deals/${dealId}/timeline`,
+  );
   const [logging, setLogging] = useState(false);
   const [editing, setEditing] = useState<TimelineEntry | null>(null);
   const [deleting, setDeleting] = useState<TimelineEntry | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  if (deal.error) return <p className="form-error" role="alert">{deal.error}</p>;
+  if (deal.error)
+    return (
+      <p className="form-error" role="alert">
+        {deal.error}
+      </p>
+    );
   if (!deal.data) return <p className="empty">Loading…</p>;
   const d = deal.data;
 
@@ -35,13 +42,20 @@ export default function DealDetail() {
 
   return (
     <>
-      <PageHeader title={d.name} subtitle={`${d.stage} · ${formatMoney(d.value_cents)}`} />
+      <PageHeader
+        title={d.name}
+        subtitle={`${d.stage} · ${formatMoney(d.value_cents)}`}
+      />
       <section className="panel summary">
         <dl className="facts">
           <div>
             <dt>Stage</dt>
             <dd>
-              <i className="dot" style={{ background: STAGE_COLORS[d.stage] }} /> {d.stage}
+              <i
+                className="dot"
+                style={{ background: STAGE_COLORS[d.stage] }}
+              />{' '}
+              {d.stage}
             </dd>
           </div>
           <div>
@@ -66,13 +80,25 @@ export default function DealDetail() {
           <div>
             <dt>Organization</dt>
             <dd>
-              {d.organization_id ? <Link to={`/organizations/${d.organization_id}`}>{d.organization_name}</Link> : '—'}
+              {d.organization_id ? (
+                <Link to={`/organizations/${d.organization_id}`}>
+                  {d.organization_name}
+                </Link>
+              ) : (
+                '—'
+              )}
             </dd>
           </div>
           <div>
             <dt>Main contact</dt>
             <dd>
-              {d.main_contact_id ? <Link to={`/contacts/${d.main_contact_id}`}>{d.main_contact_name}</Link> : '—'}
+              {d.main_contact_id ? (
+                <Link to={`/contacts/${d.main_contact_id}`}>
+                  {d.main_contact_name}
+                </Link>
+              ) : (
+                '—'
+              )}
             </dd>
           </div>
         </dl>
@@ -81,7 +107,11 @@ export default function DealDetail() {
         <section className="panel">
           <div className="section-head">
             <h2 className="section-title">Log activity</h2>
-            <button type="button" className="button primary" onClick={() => setLogging(true)}>
+            <button
+              type="button"
+              className="button primary"
+              onClick={() => setLogging(true)}
+            >
               Log activity
             </button>
           </div>
@@ -89,11 +119,22 @@ export default function DealDetail() {
         </section>
         <section className="panel">
           <h2 className="section-title">Timeline</h2>
-          {actionError && <p className="form-error" role="alert">{actionError}</p>}
+          {actionError && (
+            <p className="form-error" role="alert">
+              {actionError}
+            </p>
+          )}
           {timeline.error ? (
-            <p className="form-error" role="alert">{errorMessage(timeline.error)}</p>
+            <p className="form-error" role="alert">
+              {timeline.error}
+            </p>
           ) : (
-            <Timeline entries={timeline.data ?? []} onMarkDone={markDone} onEdit={setEditing} onDelete={setDeleting} />
+            <Timeline
+              entries={timeline.data ?? []}
+              onMarkDone={markDone}
+              onEdit={setEditing}
+              onDelete={setDeleting}
+            />
           )}
         </section>
       </div>

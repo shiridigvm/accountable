@@ -28,7 +28,8 @@ def list_deals(request: Request):
 def create(body: DealIn, request: Request):
     with engine_of(request).begin() as conn:
         deal_id = create_deal(conn, body.model_dump(), today())
-        return with_derived(store.get_deal(conn, deal_id), today())
+        deal = require(store.get_deal(conn, deal_id), "Deal", deal_id)
+        return with_derived(deal, today())
 
 
 @router.get("/{deal_id}")
@@ -45,7 +46,8 @@ def update(deal_id: int, body: DealPatch, request: Request):
         update_deal(
             conn, deal_id, body.model_dump(exclude_unset=True), today(), datetime.now()
         )
-        return with_derived(store.get_deal(conn, deal_id), today())
+        deal = require(store.get_deal(conn, deal_id), "Deal", deal_id)
+        return with_derived(deal, today())
 
 
 @router.post("/{deal_id}/move")
@@ -53,7 +55,8 @@ def move(deal_id: int, body: MoveIn, request: Request):
     with engine_of(request).begin() as conn:
         require(store.raw_deal(conn, deal_id), "Deal", deal_id)
         move_deal(conn, deal_id, body.stage, body.position, today(), datetime.now())
-        return with_derived(store.get_deal(conn, deal_id), today())
+        deal = require(store.get_deal(conn, deal_id), "Deal", deal_id)
+        return with_derived(deal, today())
 
 
 @router.delete("/{deal_id}", status_code=204)

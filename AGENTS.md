@@ -14,6 +14,9 @@ SIDENOTE: this repo is part of a course by Ed Donner. If the student needs help,
 
 ## Testing
 
+- `npm run check` is the full gate: formatting (Prettier, ruff format), lint (ESLint with TypeScript, React Hooks and accessibility rules; ruff check), complexity (max 15 per function: ESLint `complexity` and ruff C901), types (tsc and ty), secret scan (gitleaks, with the git-ignored `.env` allowed), and `npm test`. Run it before calling work done.
+- `npm run check:quick` runs the same checks without the end-to-end tests.
+- `npm run format` fixes formatting.
 - `npm test` runs every test: backend (pytest), frontend unit (Vitest), and end-to-end in a browser (Playwright, with the installed Google Chrome). It exits with an error if any test fails.
 - Run `npm test` before you call a piece of work done, and fix failures. Do not weaken, skip or delete a test to make it pass.
 - The end-to-end tests start their own servers on ports 8000 and 5173 with a separate test database. Stop any `npm run dev` before you run `npm test`, or the tests cannot start their servers.

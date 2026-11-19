@@ -2,7 +2,7 @@
 
 from datetime import date, datetime
 
-from sqlalchemy import delete, func, insert, select, update
+from sqlalchemy import Table, delete, func, insert, select, update
 from sqlalchemy.engine import Connection
 
 from accountable.schema import (
@@ -18,6 +18,13 @@ MainContact = contacts.alias("main_contact")
 
 def as_dict(row) -> dict:
     return dict(row._mapping)
+
+
+def _insert(conn: Connection, table: Table, data: dict) -> int:
+    key = conn.execute(insert(table).values(**data)).inserted_primary_key
+    if key is None:
+        raise RuntimeError(f"Insert into {table.name} returned no primary key.")
+    return key[0]
 
 
 # Organizations
@@ -54,7 +61,7 @@ def get_organization(conn: Connection, org_id: int) -> dict | None:
 
 
 def insert_organization(conn: Connection, data: dict) -> int:
-    return conn.execute(insert(organizations).values(**data)).inserted_primary_key[0]
+    return _insert(conn, organizations, data)
 
 
 def update_organization(conn: Connection, org_id: int, data: dict) -> None:
@@ -112,7 +119,7 @@ def get_contact(conn: Connection, contact_id: int) -> dict | None:
 
 
 def insert_contact(conn: Connection, data: dict) -> int:
-    return conn.execute(insert(contacts).values(**data)).inserted_primary_key[0]
+    return _insert(conn, contacts, data)
 
 
 def update_contact(conn: Connection, contact_id: int, data: dict) -> None:
@@ -175,7 +182,7 @@ def column_deal_ids(conn: Connection, stage: str) -> list[int]:
 
 
 def insert_deal(conn: Connection, data: dict) -> int:
-    return conn.execute(insert(deals).values(**data)).inserted_primary_key[0]
+    return _insert(conn, deals, data)
 
 
 def update_deal_fields(conn: Connection, deal_id: int, data: dict) -> None:
@@ -253,7 +260,7 @@ def get_activity(conn: Connection, activity_id: int) -> dict | None:
 
 
 def insert_activity(conn: Connection, data: dict) -> int:
-    return conn.execute(insert(activities).values(**data)).inserted_primary_key[0]
+    return _insert(conn, activities, data)
 
 
 def update_activity(conn: Connection, activity_id: int, data: dict) -> None:

@@ -7,8 +7,17 @@ import { DeleteDialog } from './DeleteDialog';
 describe('DeleteDialog', () => {
   it('asks before deleting', async () => {
     const onConfirm = vi.fn().mockResolvedValue(undefined);
-    render(<DeleteDialog name="Acme" kind="organization" onConfirm={onConfirm} onClose={vi.fn()} />);
-    expect(screen.getByRole('heading', { name: 'Delete Acme?' })).toBeInTheDocument();
+    render(
+      <DeleteDialog
+        name="Acme"
+        kind="organization"
+        onConfirm={onConfirm}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Delete Acme?' }),
+    ).toBeInTheDocument();
     expect(onConfirm).not.toHaveBeenCalled();
     await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(onConfirm).toHaveBeenCalled());
@@ -21,12 +30,23 @@ describe('DeleteDialog', () => {
       { contacts: 3, deals: 2 },
     );
     render(
-      <DeleteDialog name="Acme" kind="organization" onConfirm={vi.fn().mockRejectedValue(refusal)} onClose={vi.fn()} />,
+      <DeleteDialog
+        name="Acme"
+        kind="organization"
+        onConfirm={vi.fn().mockRejectedValue(refusal)}
+        onClose={vi.fn()}
+      />,
     );
     await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
-    expect(await screen.findByRole('heading', { name: 'This organization cannot be deleted' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', {
+        name: 'This organization cannot be deleted',
+      }),
+    ).toBeInTheDocument();
     expect(screen.getByText('3 contacts')).toBeInTheDocument();
     expect(screen.getByText('2 deals')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Delete' }),
+    ).not.toBeInTheDocument();
   });
 });

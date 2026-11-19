@@ -45,7 +45,11 @@ export function DeleteDialog({ name, kind, onConfirm, onClose }: Props) {
       setBusy(false);
       if (error instanceof ApiError && error.status === 409) {
         setRefusal(error.message);
-        setLinked(Object.entries(error.linked ?? {}).map(([key, count]) => `${count} ${countLabel(key, count)}`));
+        setLinked(
+          Object.entries(error.linked ?? {}).map(
+            ([key, count]) => `${count} ${countLabel(key, count)}`,
+          ),
+        );
       } else {
         setFailure(errorMessage(error));
       }
@@ -53,9 +57,16 @@ export function DeleteDialog({ name, kind, onConfirm, onClose }: Props) {
   }
 
   return (
-    <dialog ref={ref} className="dialog" aria-labelledby="delete-title" onCancel={onClose}>
+    <dialog
+      ref={ref}
+      className="dialog"
+      aria-labelledby="delete-title"
+      onCancel={onClose}
+    >
       <div>
-        <h2 id="delete-title">{refusal ? `This ${kind} cannot be deleted` : `Delete ${name}?`}</h2>
+        <h2 id="delete-title">
+          {refusal ? `This ${kind} cannot be deleted` : `Delete ${name}?`}
+        </h2>
         {refusal ? (
           <>
             <p>{refusal}</p>
@@ -85,7 +96,12 @@ export function DeleteDialog({ name, kind, onConfirm, onClose }: Props) {
               <button type="button" className="button ghost" onClick={onClose}>
                 Cancel
               </button>
-              <button type="button" className="button danger" onClick={confirm} disabled={busy}>
+              <button
+                type="button"
+                className="button danger"
+                onClick={confirm}
+                disabled={busy}
+              >
                 {busy ? 'Deleting…' : 'Delete'}
               </button>
             </>

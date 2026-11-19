@@ -3,11 +3,19 @@
 import type { Board, BoardDeal, BoardColumn } from '../api/types';
 import { DEFAULT_PROBABILITY, OPEN_STAGES, type Stage } from './stages';
 
-export function findColumn(board: Board, dealId: number): BoardColumn | undefined {
+export function findColumn(
+  board: Board,
+  dealId: number,
+): BoardColumn | undefined {
   return board.columns.find((c) => c.deals.some((d) => d.id === dealId));
 }
 
-export function moveDealLocally(board: Board, dealId: number, stage: Stage, position: number): Board {
+export function moveDealLocally(
+  board: Board,
+  dealId: number,
+  stage: Stage,
+  position: number,
+): Board {
   const source = findColumn(board, dealId);
   if (!source) return board;
   const deal = source.deals.find((d) => d.id === dealId)!;
@@ -25,9 +33,18 @@ export function moveDealLocally(board: Board, dealId: number, stage: Stage, posi
     const remaining = column.deals.filter((d) => d.id !== dealId);
     if (column.stage !== stage) return { column, remaining };
     const index = Math.max(0, Math.min(position, remaining.length));
-    return { column, remaining: [...remaining.slice(0, index), moved, ...remaining.slice(index)] };
+    return {
+      column,
+      remaining: [
+        ...remaining.slice(0, index),
+        moved,
+        ...remaining.slice(index),
+      ],
+    };
   });
-  const rebuilt = columns.map(({ column, remaining }) => summarize(column, remaining));
+  const rebuilt = columns.map(({ column, remaining }) =>
+    summarize(column, remaining),
+  );
   return totals({ ...board, columns: rebuilt });
 }
 
@@ -37,7 +54,9 @@ function summarize(column: BoardColumn, deals: BoardDeal[]): BoardColumn {
     deals,
     count: deals.length,
     value_cents: deals.reduce((sum, d) => sum + d.value_cents, 0),
-    expected_cents: column.open ? deals.reduce((sum, d) => sum + d.expected_cents, 0) : null,
+    expected_cents: column.open
+      ? deals.reduce((sum, d) => sum + d.expected_cents, 0)
+      : null,
   };
 }
 

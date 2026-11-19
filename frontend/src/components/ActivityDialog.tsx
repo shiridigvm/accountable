@@ -16,9 +16,19 @@ const FIELDS: FieldSpec[] = [
       { value: 'email', label: 'Email' },
     ],
   },
-  { name: 'description', label: 'What happened', kind: 'textarea', required: true },
+  {
+    name: 'description',
+    label: 'What happened',
+    kind: 'textarea',
+    required: true,
+  },
   { name: 'occurred_on', label: 'Date', kind: 'date', required: true },
-  { name: 'follow_up_on', label: 'Follow-up date', kind: 'date', hint: 'Optional. Shows on the dashboard until done.' },
+  {
+    name: 'follow_up_on',
+    label: 'Follow-up date',
+    kind: 'date',
+    hint: 'Optional. Shows on the dashboard until done.',
+  },
 ];
 
 type Props = {

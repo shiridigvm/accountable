@@ -26,7 +26,9 @@ describe('Dashboard', () => {
         <Dashboard />
       </MemoryRouter>,
     );
-    expect(await screen.findByRole('alert')).toHaveTextContent('Pipeline is unavailable.');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Pipeline is unavailable.',
+    );
     expect(screen.queryByText('Loading…')).not.toBeInTheDocument();
   });
 });

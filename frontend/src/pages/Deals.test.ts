@@ -17,22 +17,30 @@ const deal = {
 describe('changedBody', () => {
   it('sends only the stage when only the stage changed, so the stage rules set probability and close date', () => {
     const initial = toInitial(deal);
-    expect(changedBody(initial, { ...initial, stage: 'Won' })).toEqual({ stage: 'Won' });
+    expect(changedBody(initial, { ...initial, stage: 'Won' })).toEqual({
+      stage: 'Won',
+    });
   });
 
   it('sends a changed value in cents and nothing else', () => {
     const initial = toInitial(deal);
-    expect(changedBody(initial, { ...initial, value: '2000' })).toEqual({ value_cents: 200000 });
+    expect(changedBody(initial, { ...initial, value: '2000' })).toEqual({
+      value_cents: 200000,
+    });
   });
 
   it('sends a probability the user typed by hand', () => {
     const initial = toInitial(deal);
-    expect(changedBody(initial, { ...initial, probability: '35' })).toEqual({ probability: 35 });
+    expect(changedBody(initial, { ...initial, probability: '35' })).toEqual({
+      probability: 35,
+    });
   });
 
   it('sends an empty probability as null, so the stage default applies', () => {
     const initial = toInitial({ ...deal, probability: 35 } as Deal);
-    expect(changedBody(initial, { ...initial, probability: '' })).toEqual({ probability: null });
+    expect(changedBody(initial, { ...initial, probability: '' })).toEqual({
+      probability: null,
+    });
   });
 
   it('sends nothing when nothing changed', () => {

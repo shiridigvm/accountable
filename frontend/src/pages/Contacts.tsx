@@ -13,7 +13,11 @@ import { CONTACT_STATUSES, type ContactStatus } from '../lib/stages';
 type Filter = 'all' | ContactStatus;
 type Editing = Contact | 'new' | null;
 
-const STATUS_LABELS: Record<ContactStatus, string> = { lead: 'Lead', qualified: 'Qualified', customer: 'Customer' };
+const STATUS_LABELS: Record<ContactStatus, string> = {
+  lead: 'Lead',
+  qualified: 'Qualified',
+  customer: 'Customer',
+};
 
 function fieldsFor(orgs: Organization[]): FieldSpec[] {
   return [
@@ -26,13 +30,19 @@ function fieldsFor(orgs: Organization[]): FieldSpec[] {
       label: 'Status',
       kind: 'select',
       required: true,
-      options: CONTACT_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
+      options: CONTACT_STATUSES.map((s) => ({
+        value: s,
+        label: STATUS_LABELS[s],
+      })),
     },
     {
       name: 'organization_id',
       label: 'Organization',
       kind: 'select',
-      options: [{ value: '', label: 'None' }, ...orgs.map((o) => ({ value: String(o.id), label: o.name }))],
+      options: [
+        { value: '', label: 'None' },
+        ...orgs.map((o) => ({ value: String(o.id), label: o.name })),
+      ],
     },
   ];
 }
@@ -44,7 +54,9 @@ function toInitial(contact: Contact | null): Record<string, string> {
     phone: contact?.phone ?? '',
     job_title: contact?.job_title ?? '',
     status: contact?.status ?? 'lead',
-    organization_id: contact?.organization_id ? String(contact.organization_id) : '',
+    organization_id: contact?.organization_id
+      ? String(contact.organization_id)
+      : '',
   };
 }
 
@@ -56,13 +68,16 @@ function toBody(values: Record<string, string>) {
     phone: clean(values.phone),
     job_title: clean(values.job_title),
     status: values.status,
-    organization_id: values.organization_id ? Number(values.organization_id) : null,
+    organization_id: values.organization_id
+      ? Number(values.organization_id)
+      : null,
   };
 }
 
 export default function Contacts() {
   const [filter, setFilter] = useState<Filter>('all');
-  const path = filter === 'all' ? '/api/contacts' : `/api/contacts?status=${filter}`;
+  const path =
+    filter === 'all' ? '/api/contacts' : `/api/contacts?status=${filter}`;
   const contacts = useResource<Contact[]>(path);
   const orgs = useResource<Organization[]>('/api/organizations');
   const [editing, setEditing] = useState<Editing>(null);
@@ -73,27 +88,55 @@ export default function Contacts() {
       {
         accessorKey: 'name',
         header: 'Name',
-        cell: (c) => <Link to={`/contacts/${c.row.original.id}`}>{c.getValue() as string}</Link>,
+        cell: (c) => (
+          <Link to={`/contacts/${c.row.original.id}`}>
+            {c.getValue() as string}
+          </Link>
+        ),
       },
-      { accessorKey: 'job_title', header: 'Job title', cell: (c) => c.getValue() ?? '' },
-      { accessorKey: 'organization_name', header: 'Organization', cell: (c) => c.getValue() ?? '' },
+      {
+        accessorKey: 'job_title',
+        header: 'Job title',
+        cell: (c) => c.getValue() ?? '',
+      },
+      {
+        accessorKey: 'organization_name',
+        header: 'Organization',
+        cell: (c) => c.getValue() ?? '',
+      },
       {
         accessorKey: 'status',
         header: 'Status',
         cell: (c) => STATUS_LABELS[c.getValue() as ContactStatus],
       },
-      { accessorKey: 'email', header: 'Email', cell: (c) => c.getValue() ?? '' },
-      { accessorKey: 'phone', header: 'Phone', cell: (c) => c.getValue() ?? '' },
+      {
+        accessorKey: 'email',
+        header: 'Email',
+        cell: (c) => c.getValue() ?? '',
+      },
+      {
+        accessorKey: 'phone',
+        header: 'Phone',
+        cell: (c) => c.getValue() ?? '',
+      },
       {
         id: 'actions',
         header: '',
         enableSorting: false,
         cell: (c) => (
           <div className="row-actions">
-            <button type="button" className="link-button" onClick={() => setEditing(c.row.original)}>
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => setEditing(c.row.original)}
+            >
               Edit
             </button>
-            <button type="button" className="link-button danger-text" onClick={() => setDeleting(c.row.original)}>
+            <button
+              type="button"
+              className="link-button danger-text"
+              onClick={() => setDeleting(c.row.original)}
+            >
               Delete
             </button>
           </div>
@@ -107,8 +150,15 @@ export default function Contacts() {
 
   return (
     <>
-      <PageHeader title="Contacts" subtitle="The people we deal with: leads, qualified contacts and customers." />
-      {contacts.error && <p className="form-error" role="alert">{contacts.error}</p>}
+      <PageHeader
+        title="Contacts"
+        subtitle="The people we deal with: leads, qualified contacts and customers."
+      />
+      {contacts.error && (
+        <p className="form-error" role="alert">
+          {contacts.error}
+        </p>
+      )}
       {loaded && (
         <DataTable
           label="Contacts"
@@ -120,7 +170,10 @@ export default function Contacts() {
             <>
               <label className="filter">
                 Status
-                <select value={filter} onChange={(event) => setFilter(event.target.value as Filter)}>
+                <select
+                  value={filter}
+                  onChange={(event) => setFilter(event.target.value as Filter)}
+                >
                   <option value="all">All</option>
                   {CONTACT_STATUSES.map((s) => (
                     <option key={s} value={s}>
@@ -129,7 +182,11 @@ export default function Contacts() {
                   ))}
                 </select>
               </label>
-              <button type="button" className="button primary" onClick={() => setEditing('new')}>
+              <button
+                type="button"
+                className="button primary"
+                onClick={() => setEditing('new')}
+              >
                 Add contact
               </button>
             </>

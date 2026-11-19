@@ -14,7 +14,7 @@ from accountable.clock import today as clock_today
 from accountable.config import database_path
 from accountable.db import make_engine
 from accountable.rules.stages import DEFAULT_PROBABILITY
-from accountable.schema import activities, contacts, deal_stage_changes, deals, metadata
+from accountable.schema import activities, deal_stage_changes, metadata
 
 ORGANIZATIONS = [
     # name, website, industry, notes
@@ -424,16 +424,17 @@ def seed_database(engine: Engine, today: date) -> None:
 
         contact_ids = {}
         for name, org, title, status in CONTACTS:
-            contact_ids[name] = conn.execute(
-                insert(contacts).values(
-                    name=name,
-                    email=f"{_slug(name)}@{CONTACT_EMAIL_DOMAIN}",
-                    phone=f"555-010-{len(contact_ids) + 100:04d}",
-                    job_title=title,
-                    status=status,
-                    organization_id=org_ids[org] if org else None,
-                )
-            ).inserted_primary_key[0]
+            contact_ids[name] = store.insert_contact(
+                conn,
+                {
+                    "name": name,
+                    "email": f"{_slug(name)}@{CONTACT_EMAIL_DOMAIN}",
+                    "phone": f"555-010-{len(contact_ids) + 100:04d}",
+                    "job_title": title,
+                    "status": status,
+                    "organization_id": org_ids[org] if org else None,
+                },
+            )
 
         position_by_stage: dict[str, int] = {}
         deal_ids = {}
@@ -442,19 +443,20 @@ def seed_database(engine: Engine, today: date) -> None:
             position = position_by_stage.get(stage, 0)
             position_by_stage[stage] = position + 1
             actual = today + timedelta(days=act_off) if act_off is not None else None
-            deal_id = conn.execute(
-                insert(deals).values(
-                    name=name,
-                    stage=stage,
-                    value_cents=dollars * 100,
-                    probability=DEFAULT_PROBABILITY[stage],
-                    expected_close=today + timedelta(days=exp_off),
-                    actual_close=actual,
-                    organization_id=org_ids[org] if org else None,
-                    main_contact_id=contact_ids[contact] if contact else None,
-                    position=position,
-                )
-            ).inserted_primary_key[0]
+            deal_id = store.insert_deal(
+                conn,
+                {
+                    "name": name,
+                    "stage": stage,
+                    "value_cents": dollars * 100,
+                    "probability": DEFAULT_PROBABILITY[stage],
+                    "expected_close": today + timedelta(days=exp_off),
+                    "actual_close": actual,
+                    "organization_id": org_ids[org] if org else None,
+                    "main_contact_id": contact_ids[contact] if contact else None,
+                    "position": position,
+                },
+            )
             deal_ids[name] = deal_id
             deal_rows.append((deal_id, stage, actual))
 

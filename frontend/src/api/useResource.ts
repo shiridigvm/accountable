@@ -5,7 +5,11 @@ type State<T> = { data: T | undefined; error: string | null; loading: boolean };
 
 // Loads one GET request. `reload` fetches again after a change.
 export function useResource<T>(path: string) {
-  const [state, setState] = useState<State<T>>({ data: undefined, error: null, loading: true });
+  const [state, setState] = useState<State<T>>({
+    data: undefined,
+    error: null,
+    loading: true,
+  });
   const [version, setVersion] = useState(0);
 
   useEffect(() => {
@@ -15,7 +19,12 @@ export function useResource<T>(path: string) {
         if (active) setState({ data, error: null, loading: false });
       })
       .catch((error: unknown) => {
-        if (active) setState({ data: undefined, error: errorMessage(error), loading: false });
+        if (active)
+          setState({
+            data: undefined,
+            error: errorMessage(error),
+            loading: false,
+          });
       });
     return () => {
       active = false;

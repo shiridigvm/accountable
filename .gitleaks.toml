@@ -1,0 +1,18 @@
+title = "Accountable secret scan"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Local secrets and generated output, which are git-ignored and never committed"
+paths = [
+  '''(^|/)\.env(\..*)?$''',
+  '''(^|/)node_modules/''',
+  '''(^|/)\.venv/''',
+  '''(^|/)\.git/''',
+  '''(^|/)(dist|coverage)/''',
+  '''(^|/)__pycache__/''',
+  '''(^|/)\.(pytest_cache|ruff_cache|playwright-mcp)/''',
+  '''(^|/)(test-results|\.data|playwright-report)/''',
+  '''(^|/)backend/data/''',
+]
