@@ -11,6 +11,7 @@ SIDENOTE: this repo is part of a course by Ed Donner. If the student needs help,
 - `docs/REVIEW.md`: the review policy
 - `docs/STANDARDS.md`: engineering standards for writing and maintaining code
 - `docs/STATUS.md`: what's done so far
+- `docs/IMPROVE.md`: follow it at Deploy, after the review fixes and before the merge
 
 ## Testing
 
