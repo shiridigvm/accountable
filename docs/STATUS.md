@@ -8,6 +8,17 @@ Design and spec:
 - `docs/spec.md`: the product as built today: requirements, data model, API, screens.
 - `docs/mockups/final.html`: the approved dashboard and pipeline design. The built app follows it.
 
+## In progress: dark mode (branch `dark-mode`)
+
+- `docs/changes/dark-mode/intent.md`: agreed.
+- `docs/spec.md` already describes the product with dark mode, as it will be once this branch is merged: new section 3.9 (R32 to R36), mode-aware colors, surfaces and tokens in 6.1, the toggle in 6.2, the new tests in section 9, and design decisions 10 and 11. The app does not have dark mode yet.
+- Next: `docs/changes/dark-mode/plan.md`. Open points for the plan:
+  - A dark-mode color for the Negotiation stage. Its current color (`#3e6373`) is about 2.5:1 on the dark page, below the 3:1 that R36 requires.
+  - Cerulean and Raspberry small text on the dark page are below 4.5:1, so they go on panels only, or use lighter versions.
+  - Chart colors in `Dashboard.tsx` and stage colors in `lib/stages.ts` are hardcoded and need to move to tokens.
+  - White text on Cerulean is about 4:1 in light mode today. Either R36 is narrowed to dark mode, or this is fixed.
+  - Still to decide: the toggle's label, what happens when localStorage is unavailable, and the lightened Sea Green and Marigold values.
+
 ## How to run
 
 Needs Node (24 or later), npm, and uv. Python 3.12 is pinned in `.python-version`.

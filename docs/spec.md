@@ -13,8 +13,8 @@ Accountable is a business management system. It is planned as a sales CRM that g
 - **User**: one salesperson, using Accountable on their own computer every day. The rest of the sales team will join later.
 - **Runs locally**: the backend listens on `127.0.0.1` only. The app needs no internet connection.
 - **Browsers**: the latest Chrome, Safari, Firefox and Edge.
-- **Layout**: light mode, for laptop and desktop widths. There is no phone layout.
-- **Not in the product yet**: sign-in and accounts, several users, dark mode, a phone layout, AI features, email, calendar or phone integrations, currencies other than US dollars, reports beyond the dashboard, tags or custom fields, changing the pipeline stages, and importing or exporting data.
+- **Layout**: light mode and dark mode, for laptop and desktop widths. There is no phone layout.
+- **Not in the product yet**: sign-in and accounts, several users, following the device's own dark mode setting, a phone layout, AI features, email, calendar or phone integrations, currencies other than US dollars, reports beyond the dashboard, tags or custom fields, changing the pipeline stages, and importing or exporting data.
 
 ## 3. Requirements
 
@@ -28,7 +28,7 @@ Accountable is a business management system. It is planned as a sales CRM that g
 ### 3.2 Stages
 
 | Stage       | Usual probability | Column accent (see section 4.1) |
-|-------------|-------------------|---------------------------------|
+| ----------- | ----------------- | ------------------------------- |
 | New         | 10%               | Cerulean                        |
 | Qualified   | 25%               | Marigold                        |
 | Proposal    | 50%               | Coral                           |
@@ -94,17 +94,25 @@ Accountable is a business management system. It is planned as a sales CRM that g
 - **R30**: Money is US dollars, shown like `$1,234.00`, always with its currency sign.
 - **R31**: Dates are shown like `Nov 17, 2026`. Dates are stored as ISO dates (`2026-11-17`) and converted only for display.
 
+### 3.9 Light and dark mode
+
+- **R32**: The app has a light mode and a dark mode. Light mode is the default.
+- **R33**: A toggle at the bottom of the sidebar switches between the modes. Because the sidebar is on every page, the toggle is too. The switch applies at once to every section, including charts, dialogs and messages.
+- **R34**: The chosen mode is saved in the browser's localStorage and restored on the next visit. It is not stored on the backend or in the database.
+- **R35**: The saved mode is applied before the first paint, so a dark-mode user never sees a flash of light mode on load or reload.
+- **R36**: Text in both modes meets WCAG AA contrast: 4.5:1 for normal text, and 3:1 for large text and for non-text parts such as chart marks, stage accents and focus rings.
+
 ## 4. Data model
 
 Tables are defined with SQLAlchemy Core in `backend/accountable/schema.py`. No raw SQL.
 
-| Table | Columns |
-|-------|---------|
-| `organizations` | id, name, website, industry, notes |
-| `contacts` | id, name, email, phone, job_title, status, organization_id (nullable, FK) |
-| `deals` | id, name, stage, value_cents (integer), probability (integer percent), expected_close (date), actual_close (date, nullable), organization_id (nullable, FK), main_contact_id (nullable, FK), position (integer, order within stage) |
-| `activities` | id, type, description, occurred_on (date), follow_up_on (date, nullable), done (boolean), created_at (datetime), contact_id (nullable, FK), deal_id (nullable, FK) |
-| `deal_stage_changes` | id, deal_id (FK), from_stage, to_stage, changed_on (date), created_at (datetime, used for ordering) |
+| Table                | Columns                                                                                                                                                                                                                             |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `organizations`      | id, name, website, industry, notes                                                                                                                                                                                                  |
+| `contacts`           | id, name, email, phone, job_title, status, organization_id (nullable, FK)                                                                                                                                                           |
+| `deals`              | id, name, stage, value_cents (integer), probability (integer percent), expected_close (date), actual_close (date, nullable), organization_id (nullable, FK), main_contact_id (nullable, FK), position (integer, order within stage) |
+| `activities`         | id, type, description, occurred_on (date), follow_up_on (date, nullable), done (boolean), created_at (datetime), contact_id (nullable, FK), deal_id (nullable, FK)                                                                  |
+| `deal_stage_changes` | id, deal_id (FK), from_stage, to_stage, changed_on (date), created_at (datetime, used for ordering)                                                                                                                                 |
 
 Notes:
 
@@ -117,19 +125,19 @@ Notes:
 
 JSON over HTTP, served by FastAPI under `/api`. The frontend calls it through Vite's dev proxy.
 
-| Method and path | Purpose |
-|-----------------|---------|
-| `GET/POST /api/organizations`, `GET/PATCH/DELETE /api/organizations/{id}` | Organization CRUD. Delete returns 409 with linked counts when blocked. |
-| `GET /api/organizations/{id}/timeline` | Merged timeline for an organization. |
-| `GET/POST /api/contacts`, `GET/PATCH/DELETE /api/contacts/{id}` | Contact CRUD. `GET` accepts `status`. |
-| `GET /api/contacts/{id}/timeline` | Contact timeline. |
-| `GET/POST /api/deals`, `GET/PATCH/DELETE /api/deals/{id}` | Deal CRUD. Changing `stage` applies R5 and R6 and writes a stage change. A PATCH sends only the fields that change. |
-| `POST /api/deals/{id}/move` | Body: `{stage, position}`. Used by pipeline drag and drop. Re-numbers positions in the source and target columns. |
-| `GET /api/deals/{id}/timeline` | Deal timeline. |
-| `GET/POST /api/activities`, `PATCH/DELETE /api/activities/{id}` | Activity CRUD. `PATCH` also sets `done`. |
-| `GET /api/pipeline` | Deals grouped by stage, with column and board totals. |
-| `GET /api/dashboard` | Monthly series, open pipeline by stage, recent activity, follow-ups. |
-| `POST /api/admin/reset` | Replaces all data with the sample data. Returns 404 unless the environment variable `ACCOUNTABLE_ALLOW_RESET=1` is set, which only the end-to-end tests do. |
+| Method and path                                                           | Purpose                                                                                                                                                     |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET/POST /api/organizations`, `GET/PATCH/DELETE /api/organizations/{id}` | Organization CRUD. Delete returns 409 with linked counts when blocked.                                                                                      |
+| `GET /api/organizations/{id}/timeline`                                    | Merged timeline for an organization.                                                                                                                        |
+| `GET/POST /api/contacts`, `GET/PATCH/DELETE /api/contacts/{id}`           | Contact CRUD. `GET` accepts `status`.                                                                                                                       |
+| `GET /api/contacts/{id}/timeline`                                         | Contact timeline.                                                                                                                                           |
+| `GET/POST /api/deals`, `GET/PATCH/DELETE /api/deals/{id}`                 | Deal CRUD. Changing `stage` applies R5 and R6 and writes a stage change. A PATCH sends only the fields that change.                                         |
+| `POST /api/deals/{id}/move`                                               | Body: `{stage, position}`. Used by pipeline drag and drop. Re-numbers positions in the source and target columns.                                           |
+| `GET /api/deals/{id}/timeline`                                            | Deal timeline.                                                                                                                                              |
+| `GET/POST /api/activities`, `PATCH/DELETE /api/activities/{id}`           | Activity CRUD. `PATCH` also sets `done`.                                                                                                                    |
+| `GET /api/pipeline`                                                       | Deals grouped by stage, with column and board totals.                                                                                                       |
+| `GET /api/dashboard`                                                      | Monthly series, open pipeline by stage, recent activity, follow-ups.                                                                                        |
+| `POST /api/admin/reset`                                                   | Replaces all data with the sample data. Returns 404 unless the environment variable `ACCOUNTABLE_ALLOW_RESET=1` is set, which only the end-to-end tests do. |
 
 Errors use one shape: `{"error": "...", "linked": {...}}` for 409 delete refusals. Other errors are 404 (not found) or 422 (invalid input), with `{"error": "..."}`.
 
@@ -140,8 +148,10 @@ Errors use one shape: `{"error": "...", "linked": {...}}` for 409 delete refusal
 From the brand skill (`.claude/skills/brand/SKILL.md`, same content as `docs/BRAND.md`). The brand takes priority over general design guidance.
 
 - **Fonts**: Instrument Sans for headings and body. Instrument Serif only for one accent line on the dashboard. JetBrains Mono for money, numbers and identifiers in tables.
-- **Colors**: Midnight `#073B4C` for ink. Sea Green `#06D6A0` for success and primary actions (with Midnight text). Marigold `#FFC145`, Coral `#F78C6B`, Cerulean `#118AB2` and Raspberry `#EF476F` for the rest. Darkened Sea Green and Marigold for small text on light backgrounds.
-- **Surfaces**: page `#F0F4F5`, white rounded panels, no outline.
+- **Colors**: Sea Green `#06D6A0` for success and primary actions (with Midnight text). Marigold `#FFC145`, Coral `#F78C6B`, Cerulean `#118AB2` and Raspberry `#EF476F` for the rest. Sea Green and Marigold are darkened for small text in light mode and lightened for small text in dark mode.
+- **Ink**: Midnight `#073B4C` in light mode, Sea Mist `#CDD8DB` in dark mode.
+- **Surfaces**: light mode has page `#F0F4F5` and white panels. Dark mode has page `#04232E` and black panels. Panels are rounded with no outline in both modes.
+- **Tokens**: every color is defined once, as a token, with a light and a dark value. Components, charts and dialogs use the tokens, with no per-component color overrides for dark mode.
 - **Tables**: rows separated by alternating background tint, not grid lines.
 - **UI text**: short labels, plain English, no exclamation marks. Money always has `$`.
 
@@ -149,7 +159,7 @@ The approved dashboard and pipeline design is `docs/mockups/final.html`.
 
 ### 6.2 Layout
 
-- Left sidebar with five sections: Dashboard, Organizations, Contacts, Deals, Pipeline. Light panel, active item in Sea Green tint.
+- Left sidebar with five sections: Dashboard, Organizations, Contacts, Deals, Pipeline. Panel surface for the current mode, active item in Sea Green tint. The light and dark mode toggle (R33) sits at the bottom.
 - Main area: page title, then content.
 - Detail pages: a summary panel at the top (key fields and links), then two columns on wide screens, with related records on the left and the timeline on the right. A single column below about 1100px.
 
@@ -201,10 +211,10 @@ Per `docs/TECH_STACK.md`.
 `npm test` runs three suites and fails if any test fails:
 
 - Backend unit and API tests (pytest), covering the rules in section 3 and the API in section 5. Restart persistence is tested by opening a new app instance on the same file.
-- Frontend unit tests (Vitest), covering formatting, board layout, dashboard data, tables, dialogs and the forms.
-- End-to-end tests (Playwright Test, with the installed Google Chrome) in `e2e/tests/`. They start the app on their own servers and database, covering tables, the contacts filter, delete refusals, detail pages, the pipeline and the dashboard.
+- Frontend unit tests (Vitest), covering formatting, board layout, dashboard data, tables, dialogs, the forms and the mode toggle.
+- End-to-end tests (Playwright Test, with the installed Google Chrome) in `e2e/tests/`. They start the app on their own servers and database, covering tables, the contacts filter, delete refusals, detail pages, the pipeline, the dashboard, and switching to dark mode and keeping it after a reload.
 
-Not covered by automated tests: visual comparison with the mockup, Safari, Firefox and Edge, and browser restart.
+Not covered by automated tests: visual comparison with the mockup, how dark mode looks, Safari, Firefox and Edge, and browser restart.
 
 ## 10. Design decisions
 
@@ -219,3 +229,5 @@ Choices the requirements leave open, with the reason for each.
 7. **Stage colors.** Six stages use five palette colors plus a Midnight tint. Negotiation uses the tint so it does not match Won's Sea Green.
 8. **Client-side search and sort.** The data is small (about 25 deals and 20 contacts).
 9. **Reopening a Won or Lost deal** clears the actual close date, because an open deal has no outcome. The probability follows the new stage (R5). Moving Won to Lost keeps the date, since R6 does not replace an existing one.
+10. **Mode saved in the browser, not the database.** There is one user per computer and no accounts, so localStorage is enough and the backend stays unchanged.
+11. **Light mode by default, not the device setting.** Following the device setting is left for a later change. Light mode stays the default so the app looks the same as before for anyone who never uses the toggle.
