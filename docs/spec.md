@@ -100,7 +100,7 @@ Accountable is a business management system. It is planned as a sales CRM that g
 - **R33**: A toggle at the bottom of the sidebar switches between the modes. Because the sidebar is on every page, the toggle is too. The switch applies at once to every section, including charts, dialogs and messages.
 - **R34**: The chosen mode is saved in the browser's localStorage and restored on the next visit. It is not stored on the backend or in the database.
 - **R35**: The saved mode is applied before the first paint, so a dark-mode user never sees a flash of light mode on load or reload.
-- **R36**: Text in both modes meets WCAG AA contrast: 4.5:1 for normal text, and 3:1 for large text and for non-text parts such as chart marks, stage accents and focus rings.
+- **R36**: Text in dark mode meets WCAG AA contrast: 4.5:1 for normal text, and 3:1 for large text and for non-text parts such as chart marks, stage accents and focus rings. Light mode keeps its current colors.
 
 ## 4. Data model
 

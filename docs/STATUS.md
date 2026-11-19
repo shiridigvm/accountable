@@ -12,12 +12,8 @@ Design and spec:
 
 - `docs/changes/dark-mode/intent.md`: agreed.
 - `docs/spec.md` already describes the product with dark mode, as it will be once this branch is merged: new section 3.9 (R32 to R36), mode-aware colors, surfaces and tokens in 6.1, the toggle in 6.2, the new tests in section 9, and design decisions 10 and 11. The app does not have dark mode yet.
-- Next: `docs/changes/dark-mode/plan.md`. Open points for the plan:
-  - A dark-mode color for the Negotiation stage. Its current color (`#3e6373`) is about 2.5:1 on the dark page, below the 3:1 that R36 requires.
-  - Cerulean and Raspberry small text on the dark page are below 4.5:1, so they go on panels only, or use lighter versions.
-  - Chart colors in `Dashboard.tsx` and stage colors in `lib/stages.ts` are hardcoded and need to move to tokens.
-  - White text on Cerulean is about 4:1 in light mode today. Either R36 is narrowed to dark mode, or this is fixed.
-  - Still to decide: the toggle's label, what happens when localStorage is unavailable, and the lightened Sea Green and Marigold values.
+- `docs/changes/dark-mode/plan.md`: written, awaiting review. It settles the open points from the spec step: dark token values with measured contrast, the toggle (a "Dark mode" button with `aria-pressed`), localStorage fallback to light, and the move of hardcoded colors into tokens. R36 in `docs/spec.md` is now scoped to dark mode, matching the intent, because some light-mode colors are below AA today and light mode must not change.
+- No code written yet.
 
 ## How to run
 
@@ -73,4 +69,6 @@ Other checks: `npm run typecheck`, `npm run lint`, `npm run build`.
 - Visual comparison with `final.html` is by eye only, not automated.
 - The dashboard chunk is larger than 500 kB because Recharts is bundled in one piece. This is a build warning, not an error.
 - Restart persistence is tested at the API level (a new app instance on the same file). The browser tests do not restart the server.
+- Some light-mode colors are below WCAG AA: white on Cerulean (3.96:1), white on Raspberry (3.62:1), Raspberry on its tint (3.09:1), muted text on the page (4.46:1). Left as they are by the dark-mode change, which keeps light mode unchanged.
+- `--cerulean` is used for focus rings in `frontend/src/styles.css` but never defined, so focus rings fall back to the text color. The dark-mode plan fixes this in Phase 1.
 - Nothing is committed yet. The user does the commits.
