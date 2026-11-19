@@ -1,11 +1,11 @@
 ## Status
 
-The MVP is built to the plan in `docs/plan.md`. Each phase has its tests, and the full suite is run with `npm test`.
+The MVP is built to the plan in `docs/changes/mvp/plan.md`. Each phase has its tests, and the full suite is run with `npm test`.
 
 Design and spec:
 
-- `docs/intent.md`: what we are building. Settled.
-- `docs/spec.md`: requirements, data model, API, screens. All decisions are recorded in its Decisions section, which the user asked to be made without them. A change goes into the spec first.
+- `docs/changes/mvp/intent.md`: what the MVP was for. Settled.
+- `docs/spec.md`: the product as built today: requirements, data model, API, screens.
 - `docs/mockups/final.html`: the approved dashboard and pipeline design. The built app follows it.
 
 ## How to run

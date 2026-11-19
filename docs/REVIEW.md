@@ -10,6 +10,7 @@ Make a separate pass over every change for each of these:
 - **Bugs:** the code does what it's meant to, including when something goes wrong.
 - **Security:** no secrets or personal data are exposed, and nobody can do what they shouldn't.
 - **Matches spec.md and plan.md:** the change does what those documents say, with nothing missing and nothing extra.
+- **Undocumented code:** flag any code that spec.md doesn't describe, so the change updates spec.md too.
 
 ## Important
 

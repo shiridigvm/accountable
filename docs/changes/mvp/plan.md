@@ -1,6 +1,6 @@
 # Plan: building the Accountable MVP
 
-Built from `docs/intent.md` and `docs/spec.md`. The design is `docs/mockups/final.html`. This plan lists the files, the order, the risks and the tests. No code is written yet.
+Built from `docs/changes/mvp/intent.md` and the spec as it stood then. The design is `docs/mockups/final.html`. This plan lists the files, the order, the risks and the tests. No code is written yet.
 
 All nine decisions in `spec.md` are made, and the user asked for them to be made without them. Items 1, 2 and 4 shape the data model. Item 3 shapes the contact timeline in Phase 4. Item 9 shapes the stage rules in Phase 2. A change to any of them goes into the spec first.
 
@@ -55,7 +55,7 @@ Nothing in the repo is code yet. The repo root has `AGENTS.md`, `README.md` (cou
 | `docs/STATUS.md` | every phase | Record what is done and what is next. Required by `AGENTS.md`. |
 | `docs/spec.md` | when a decision changes | Update the affected requirement or the decision entry. |
 
-Not changed: `README.md`, `course/`, `assets/`, `community_contributions/`, `docs/intent.md`, `docs/TECH_STACK.md`, `docs/BRAND.md`, `.claude/`.
+Not changed: `README.md`, `course/`, `assets/`, `community_contributions/`, `docs/changes/mvp/intent.md`, `docs/TECH_STACK.md`, `docs/BRAND.md`, `.claude/`.
 
 ## 2. Order of work
 
