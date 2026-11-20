@@ -5,6 +5,7 @@ import type { Contact, TimelineEntry } from '../api/types';
 import { useResource } from '../api/useResource';
 import { ActivityDialog } from '../components/ActivityDialog';
 import { DeleteDialog } from '../components/DeleteDialog';
+import { AddedBy } from '../components/AddedBy';
 import { PageHeader } from '../components/PageHeader';
 import { Timeline } from '../components/Timeline';
 import { STATUS_LABELS } from '../lib/labels';
@@ -61,6 +62,7 @@ export default function ContactDetail() {
           {[c.email, c.phone].filter(Boolean).join(' · ') ||
             'No email or phone.'}
         </p>
+        <AddedBy createdBy={c.created_by} updatedBy={c.updated_by} />
       </section>
       <div className="detail-grid">
         <section className="panel">

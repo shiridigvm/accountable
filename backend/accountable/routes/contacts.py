@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Response
 
 from accountable import store
-from accountable.routes.common import engine_of, require
+from accountable.routes.common import added_by, changed_by, engine_of, require
 from accountable.rules.delete import check_deletable
 from accountable.rules.timeline import (
     activity_entry,
@@ -22,7 +22,7 @@ def list_contacts(request: Request, status: str | None = None):
 @router.post("", status_code=201)
 def create_contact(body: ContactIn, request: Request):
     with engine_of(request).begin() as conn:
-        contact_id = store.insert_contact(conn, body.model_dump())
+        contact_id = store.insert_contact(conn, body.model_dump() | added_by(request))
         return store.get_contact(conn, contact_id)
 
 
@@ -36,7 +36,9 @@ def get_contact(contact_id: int, request: Request):
 def update_contact(contact_id: int, body: ContactPatch, request: Request):
     with engine_of(request).begin() as conn:
         require(store.get_contact(conn, contact_id), "Contact", contact_id)
-        store.update_contact(conn, contact_id, body.model_dump(exclude_unset=True))
+        store.update_contact(
+            conn, contact_id, body.model_dump(exclude_unset=True) | changed_by(request)
+        )
         return store.get_contact(conn, contact_id)
 
 

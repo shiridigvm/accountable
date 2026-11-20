@@ -6,7 +6,8 @@
     "e2e"
   ],
   "scripts": {
-    "dev": "concurrently -n api,web -c blue,green \"uv run -m uvicorn accountable.main:app --host 127.0.0.1 --port 8000 --reload --reload-dir backend/accountable\" \"npm run dev -w frontend\"",
+    "dev": "node scripts/run.mjs dev",
+    "start": "node scripts/run.mjs start",
     "seed": "uv run -m accountable.seed",
     "format": "npm run format -w frontend && uv run -m ruff format backend",
     "format:check": "npm run format:check -w frontend && uv run -m ruff format --check backend",

@@ -16,6 +16,8 @@ const org: Organization = {
   notes: 'Long-standing customer.',
   contact_count: 1,
   deal_count: 1,
+  created_by: 'ana@example.com',
+  updated_by: 'ben@example.com',
 };
 
 function contact(id: number, name: string, organization_id: number | null) {
@@ -28,6 +30,8 @@ function contact(id: number, name: string, organization_id: number | null) {
     status: 'lead',
     organization_id,
     organization_name: null,
+    created_by: 'ana@example.com',
+    updated_by: 'ben@example.com',
   } satisfies Contact;
 }
 
@@ -47,6 +51,8 @@ function deal(id: number, name: string, organization_id: number | null) {
     position: 0,
     expected_cents: 625000,
     late: false,
+    created_by: 'ana@example.com',
+    updated_by: 'ben@example.com',
   } satisfies Deal;
 }
 
@@ -105,6 +111,13 @@ describe('OrganizationDetail', () => {
     stubFetch(happy);
     renderPage();
     expect(await screen.findByRole('heading', { name: 'Acme' })).toBeVisible();
+    // R46: who added and last changed the record, in the summary panel.
+    expect(screen.getByText('Added by').nextElementSibling).toHaveTextContent(
+      'ana@example.com',
+    );
+    expect(
+      screen.getByText('Last changed by').nextElementSibling,
+    ).toHaveTextContent('ben@example.com');
     expect(screen.getByText('Manufacturing · acme.example')).toBeVisible();
     expect(screen.getByText('Long-standing customer.')).toBeVisible();
     expect(screen.getByText('1 contacts · 1 deals')).toBeVisible();

@@ -1,9 +1,11 @@
 """Sample data. Fixed records; every date is an offset from today, so the data stays current.
 
-Run with `npm run seed`. Startup also seeds when the database file is new.
+Run with `npm run seed`, which only works on the local SQLite file (R27). Startup
+also seeds a database that had no tables, SQLite or Postgres (R28).
 """
 
 import itertools
+import sys
 from datetime import date, datetime, time, timedelta
 
 from sqlalchemy import delete, insert
@@ -11,10 +13,14 @@ from sqlalchemy.engine import Engine
 
 from accountable import store
 from accountable.clock import today as clock_today
-from accountable.config import database_path
+from accountable.config import database_url, is_postgres
 from accountable.db import make_engine
+from accountable.migrate import run_migrations
 from accountable.rules.stages import DEFAULT_PROBABILITY
 from accountable.schema import activities, deal_stage_changes, metadata
+
+# Who added and last changed every sample record (R45).
+SAMPLE = {"created_by": "Sample data", "updated_by": "Sample data"}
 
 ORGANIZATIONS = [
     # name, website, industry, notes
@@ -419,6 +425,7 @@ def seed_database(engine: Engine, today: date) -> None:
                     "website": website,
                     "industry": industry,
                     "notes": notes,
+                    **SAMPLE,
                 },
             )
 
@@ -433,6 +440,7 @@ def seed_database(engine: Engine, today: date) -> None:
                     "job_title": title,
                     "status": status,
                     "organization_id": org_ids[org] if org else None,
+                    **SAMPLE,
                 },
             )
 
@@ -455,6 +463,7 @@ def seed_database(engine: Engine, today: date) -> None:
                     "organization_id": org_ids[org] if org else None,
                     "main_contact_id": contact_ids[contact] if contact else None,
                     "position": position,
+                    **SAMPLE,
                 },
             )
             deal_ids[name] = deal_id
@@ -504,18 +513,25 @@ def seed_database(engine: Engine, today: date) -> None:
                     if target == "contact"
                     else None,
                     deal_id=deal_ids[target_name] if target == "deal" else None,
+                    **SAMPLE,
                 )
             )
             index += 1
 
 
 def main() -> None:
-    path = database_path()
-    engine = make_engine(path)
-    metadata.create_all(engine)
+    if is_postgres():
+        # The team's data lives in Postgres. Never wipe it from the command line.
+        sys.exit(
+            "npm run seed only resets the local SQLite file. DATABASE_URL points at "
+            "Postgres, so nothing was changed."
+        )
+    url = database_url()
+    engine = make_engine(url)
+    run_migrations(engine)
     seed_database(engine, clock_today())
     engine.dispose()
-    print(f"Sample data written to {path}")
+    print(f"Sample data written to {url.removeprefix('sqlite:///')}")
 
 
 if __name__ == "__main__":

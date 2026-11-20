@@ -5,6 +5,7 @@ import type { Deal, TimelineEntry } from '../api/types';
 import { useResource } from '../api/useResource';
 import { ActivityDialog } from '../components/ActivityDialog';
 import { DeleteDialog } from '../components/DeleteDialog';
+import { AddedBy } from '../components/AddedBy';
 import { PageHeader } from '../components/PageHeader';
 import { Timeline } from '../components/Timeline';
 import { formatDate, formatMoney, formatPercent } from '../lib/format';
@@ -102,6 +103,7 @@ export default function DealDetail() {
             </dd>
           </div>
         </dl>
+        <AddedBy createdBy={d.created_by} updatedBy={d.updated_by} />
       </section>
       <div className="detail-grid">
         <section className="panel">

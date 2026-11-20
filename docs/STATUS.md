@@ -8,6 +8,19 @@ Design and spec:
 - `docs/spec.md`: a summary of the product as built today, with an index of the area files in `docs/specs/`, which hold the requirements, data model, API and screens, one file per product area.
 - `docs/mockups/final.html`: the approved dashboard and pipeline design. The built app follows it.
 
+## Sign-in, search and a user menu (branch `multi-user`)
+
+Built to `docs/changes/multi-user/plan.md`, phases 1 to 4. Departures are written into the plan.
+
+- Sign-in: Supabase Auth with email and password in the browser (`frontend/src/lib/auth.ts`). The backend checks every token with Supabase's `/auth/v1/user` and caches good ones for 5 minutes (`backend/accountable/auth.py`). Every router except `routes/auth.py` needs a token. The sign-in screen replaces the page at the same URL (`components/AuthGate.tsx`, `pages/SignIn.tsx`).
+- Test sign-in (`ACCOUNTABLE_TEST_SIGN_IN=1`): an email and no password, for the end-to-end tests and ui-check. The app refuses to start with it on Postgres. `npm run dev` turns it on.
+- Database: SQLite for `npm run dev` and the tests, Postgres on Supabase through `DATABASE_URL` for `npm start` and Render. Alembic migrations run at startup (`backend/accountable/migrate.py`, `migrations/`). A database with no tables is seeded once. Row-level security is on for every table on Postgres.
+- Who added and last changed each organization, contact, deal and activity: set by the backend from the token, shown on detail pages and timeline activities (`components/AddedBy.tsx`).
+- Search in the top bar (`components/SearchBox.tsx`, `GET /api/search`). Matching runs in Python (`rules/search.py`), so SQLite and Postgres give the same results.
+- User menu under the initials (`components/UserMenu.tsx`): email, Light, Dark or System, and Sign out. System is the default and follows the device. The sidebar toggle is gone.
+- Running: `scripts/run.mjs` reads `.env` with Node's own parser. `npm run dev` leaves `DATABASE_URL` out. `npm start` builds the frontend and serves it from FastAPI at http://127.0.0.1:8000 against Supabase. `render.yaml` describes the Render service.
+- New dependencies: `psycopg[binary]`, `alembic`, `@supabase/supabase-js` (cases in the plan, choice 1).
+
 ## Dark mode (branch `dark-mode`)
 
 Built to `docs/changes/dark-mode/plan.md`, all phases done.
@@ -32,9 +45,17 @@ npm install
 npm run dev
 ```
 
-Then open http://127.0.0.1:5173. The app starts on the dashboard. The first start creates the database and fills it with sample data. Data is kept in `backend/data/accountable.db`.
+`.env` holds `DATABASE_URL`, `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. Then open http://127.0.0.1:5173 and sign in, with your Supabase user or with test sign-in. `npm run dev` keeps its data in `backend/data/accountable.db` and never uses `DATABASE_URL`. The first start creates the database and fills it with sample data.
 
-To reset to the sample data:
+To run the app the way Render does, against the team's Postgres on Supabase (its migrations change that database):
+
+```
+npm start
+```
+
+Then open http://127.0.0.1:8000.
+
+To reset the local SQLite file to the sample data (it refuses when `DATABASE_URL` points at Postgres):
 
 ```
 npm run seed
@@ -72,6 +93,14 @@ Other checks: `npm run typecheck`, `npm run lint`, `npm run build`.
 - Timeline errors on the organization, contact and deal pages showed "Something went wrong." instead of the server's message. The message is now shown (`frontend/src/pages/DealDetail.test.tsx`).
 
 ## Known gaps
+
+- Sign-in, search and the menu (`multi-user`):
+  - No automated test signs in through Supabase or runs on Postgres. Those are checked by hand with `npm start` against Supabase: see the plan's Phase 1 checks.
+  - A token the backend has cached stays valid there for up to 5 minutes after sign-out.
+  - `render.yaml` sets `TZ` to `Australia/Brisbane`, guessed from this computer's time zone, and leaves the region at Render's default (Oregon). Both should match the team and the Supabase region before the first deploy; the region can't change after.
+  - Stage changes don't record who made them (R46).
+  - The "Unknown" default stays on the who columns (plan, choice 7), so the tests, not the database, catch a write that forgets them.
+  - Test sign-in tokens live in the backend's memory, so restarting the backend (or the dev reloader after a backend edit) signs test users out.
 
 - Only Chrome is tested automatically. Safari, Firefox and Edge have not been checked.
 - The app has not been checked by eye in a real browser session yet. That is the user's check (criterion 8).

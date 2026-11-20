@@ -1,4 +1,7 @@
-"""Table definitions (SQLAlchemy Core). The check constraints back up the API rules."""
+"""Table definitions (SQLAlchemy Core). The check constraints back up the API rules.
+
+The migrations in migrations/ create and change the tables. Keep this file in step.
+"""
 
 from sqlalchemy import (
     Boolean,
@@ -16,6 +19,16 @@ from sqlalchemy import (
 
 metadata = MetaData()
 
+
+def _who() -> list[Column]:
+    """Who added and last changed a record (R44). Migrations own the real schema;
+    these definitions are kept in step with them for queries."""
+    return [
+        Column("created_by", String, nullable=False, server_default="Unknown"),
+        Column("updated_by", String, nullable=False, server_default="Unknown"),
+    ]
+
+
 organizations = Table(
     "organizations",
     metadata,
@@ -24,6 +37,7 @@ organizations = Table(
     Column("website", String),
     Column("industry", String),
     Column("notes", Text),
+    *_who(),
 )
 
 contacts = Table(
@@ -36,6 +50,7 @@ contacts = Table(
     Column("job_title", String),
     Column("status", String, nullable=False),
     Column("organization_id", Integer, ForeignKey("organizations.id")),
+    *_who(),
     CheckConstraint(
         "status IN ('lead', 'qualified', 'customer')", name="contact_status"
     ),
@@ -54,6 +69,7 @@ deals = Table(
     Column("organization_id", Integer, ForeignKey("organizations.id")),
     Column("main_contact_id", Integer, ForeignKey("contacts.id")),
     Column("position", Integer, nullable=False),
+    *_who(),
     CheckConstraint("value_cents >= 0", name="deal_value_non_negative"),
     CheckConstraint("probability BETWEEN 0 AND 100", name="deal_probability_range"),
     CheckConstraint(
@@ -74,6 +90,7 @@ activities = Table(
     Column("created_at", DateTime, nullable=False),
     Column("contact_id", Integer, ForeignKey("contacts.id")),
     Column("deal_id", Integer, ForeignKey("deals.id")),
+    *_who(),
     CheckConstraint("type IN ('note', 'call', 'email')", name="activity_type"),
     # Exactly one of contact_id or deal_id is set.
     CheckConstraint(

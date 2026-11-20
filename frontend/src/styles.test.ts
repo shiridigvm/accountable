@@ -83,6 +83,13 @@ const sources = import.meta.glob(['./**/*.{ts,tsx}', '!./**/*.test.{ts,tsx}'], {
   eager: true,
 }) as Record<string, string>;
 
+// Component stylesheets (one per part, plan.md choice 12) use the tokens only.
+const stylesheets = import.meta.glob(['./**/*.css', '!./styles.css'], {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
 describe('light mode tokens', () => {
   it('keep the colors light mode had before dark mode', () => {
     for (const [token, value] of Object.entries(LIGHT_BEFORE_DARK_MODE)) {
@@ -96,9 +103,19 @@ describe('colors in one place', () => {
     expect(Object.keys(sources)).toContain('./pages/Dashboard.tsx');
   });
 
+  it('finds the component stylesheets to check', () => {
+    expect(Object.keys(stylesheets)).toEqual(
+      expect.arrayContaining([
+        './components/SearchBox.css',
+        './components/UserMenu.css',
+        './pages/SignIn.css',
+      ]),
+    );
+  });
+
   it('has no color literals outside styles.css', () => {
-    const literal = /#[0-9a-fA-F]{3,8}\b|rgba?\(/;
-    const offenders = Object.entries(sources)
+    const literal = /#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(/;
+    const offenders = Object.entries({ ...sources, ...stylesheets })
       .filter(([, text]) => literal.test(text))
       .map(([file]) => file);
     expect(offenders).toEqual([]);

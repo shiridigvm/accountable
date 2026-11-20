@@ -1,0 +1,37 @@
+/* Sign-in screen. Colors come from the tokens in styles.css only. */
+.sign-in {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: var(--page);
+}
+
+.sign-in-column {
+  width: min(380px, 100%);
+  display: grid;
+  gap: 16px;
+}
+
+.sign-in-wordmark {
+  padding: 0;
+  text-align: center;
+  font-size: 22px;
+}
+
+.sign-in-panel h1,
+.sign-in-panel h2 {
+  margin: 0 0 16px;
+}
+
+.sign-in-panel h1 {
+  font-size: 22px;
+}
+
+.sign-in-panel h2 {
+  font-size: 16px;
+}
+
+.sign-in-panel .button {
+  width: 100%;
+}

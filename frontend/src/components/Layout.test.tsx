@@ -1,15 +1,16 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { THEME_STORAGE_KEY } from '../lib/theme';
+import { describe, expect, it, vi } from 'vitest';
 import { Layout } from './Layout';
 
-afterEach(() => {
-  vi.restoreAllMocks();
-  localStorage.clear();
-  delete document.documentElement.dataset.theme;
-});
+vi.mock('../lib/auth', () => ({
+  useSession: () => ({
+    email: 'ana@example.com',
+    accessToken: 't',
+    kind: 'test',
+  }),
+  signOut: vi.fn(),
+}));
 
 function renderAt(path: string) {
   render(
@@ -51,51 +52,22 @@ describe('Layout', () => {
       'aria-current',
     );
   });
-});
 
-describe('dark mode toggle', () => {
-  function toggle() {
-    return screen.getByRole('button', { name: 'Dark mode' });
-  }
-
-  it('sits in the sidebar after the section links, off by default', () => {
+  it('has a top bar with the search box and the user menu, and no theme toggle', () => {
     renderAt('/deals');
-    const nav = screen.getByRole('navigation', { name: 'Main' });
-    expect(nav.nextElementSibling).toBe(toggle());
-    expect(toggle()).toHaveAttribute('aria-pressed', 'false');
-    expect(document.documentElement).not.toHaveAttribute('data-theme');
-  });
-
-  it('switches to dark and back, saving each choice', async () => {
-    const user = userEvent.setup();
-    renderAt('/deals');
-
-    await user.click(toggle());
-    expect(toggle()).toHaveAttribute('aria-pressed', 'true');
-    expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
-    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
-
-    await user.click(toggle());
-    expect(toggle()).toHaveAttribute('aria-pressed', 'false');
-    expect(document.documentElement).not.toHaveAttribute('data-theme');
-    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('light');
-  });
-
-  it('starts pressed when the page already loaded in dark mode', () => {
-    document.documentElement.dataset.theme = 'dark';
-    renderAt('/deals');
-    expect(toggle()).toHaveAttribute('aria-pressed', 'true');
-  });
-
-  it('still switches when the choice cannot be saved', async () => {
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('storage blocked');
-    });
-    const user = userEvent.setup();
-    renderAt('/deals');
-
-    await user.click(toggle());
-    expect(toggle()).toHaveAttribute('aria-pressed', 'true');
-    expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+    const topbar = screen.getByRole('banner');
+    expect(
+      within(topbar).getByRole('combobox', { name: 'Search' }),
+    ).toBeInTheDocument();
+    expect(
+      within(topbar).getByRole('button', {
+        name: 'Account menu for ana@example.com',
+      }),
+    ).toHaveTextContent('A');
+    expect(
+      screen.queryByRole('button', { name: 'Dark mode' }),
+    ).not.toBeInTheDocument();
+    const sidebar = screen.getByRole('complementary');
+    expect(within(sidebar).queryByRole('button')).not.toBeInTheDocument();
   });
 });

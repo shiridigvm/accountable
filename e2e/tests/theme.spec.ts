@@ -1,5 +1,6 @@
-// Dark mode (R32 to R36): the toggle, remembering the choice, and no flash of light mode.
-import { expect, test, type Page } from "@playwright/test";
+// The theme (R32 to R36) and success criterion 5: Light, Dark or System from the
+// user menu, remembered after a reload, System following the device, no flash.
+import { expect, test, type Page } from "./fixtures";
 
 const LIGHT_PAGE = "rgb(240, 244, 245)";
 const DARK_PAGE = "rgb(4, 35, 46)";
@@ -10,13 +11,28 @@ test.beforeEach(async ({ request }) => {
   expect(response.ok()).toBeTruthy();
 });
 
-function toggle(page: Page) {
-  return page.getByRole("button", { name: "Dark mode" });
+function menuButton(page: Page) {
+  return page.getByRole("button", { name: /^Account menu for / });
 }
 
-function saveDark(page: Page) {
-  return page.addInitScript(() =>
-    localStorage.setItem("accountable-theme", "dark"),
+async function pickTheme(page: Page, name: "Light" | "Dark" | "System") {
+  await menuButton(page).click();
+  await page.getByRole("menuitemradio", { name }).click();
+}
+
+async function expectChecked(page: Page, name: string) {
+  await menuButton(page).click();
+  await expect(page.getByRole("menuitemradio", { name })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+  await page.keyboard.press("Escape");
+}
+
+function saveChoice(page: Page, choice: string) {
+  return page.addInitScript(
+    (value) => localStorage.setItem("accountable-theme", value),
+    choice,
   );
 }
 
@@ -24,25 +40,38 @@ async function expectPage(page: Page, background: string) {
   await expect(page.locator("body")).toHaveCSS("background-color", background);
 }
 
-test("the app is light by default", async ({ page }) => {
+test("System is the default and follows a light device", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/dashboard");
-  await expect(toggle(page)).toHaveAttribute("aria-pressed", "false");
   await expect(page.locator("html")).not.toHaveAttribute("data-theme");
+  await expectPage(page, LIGHT_PAGE);
+  await expectChecked(page, "System");
+});
+
+test("System follows a dark device, and a change while the app is open", async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto("/dashboard");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expectPage(page, DARK_PAGE);
+
+  await page.emulateMedia({ colorScheme: "light" });
   await expectPage(page, LIGHT_PAGE);
 });
 
-test("the toggle switches to dark mode, and the choice is kept after a reload", async ({
+test("picking Dark in the menu applies it and keeps it after a reload", async ({
   page,
 }) => {
+  await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/dashboard");
-  await toggle(page).click();
-  await expect(toggle(page)).toHaveAttribute("aria-pressed", "true");
+  await pickTheme(page, "Dark");
   await expectPage(page, DARK_PAGE);
 
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expectPage(page, DARK_PAGE);
-  await expect(toggle(page)).toHaveAttribute("aria-pressed", "true");
+  await expectChecked(page, "Dark");
 
   await page
     .getByRole("navigation", { name: "Main" })
@@ -52,63 +81,75 @@ test("the toggle switches to dark mode, and the choice is kept after a reload", 
     page.getByRole("heading", { name: "Pipeline", level: 1 }),
   ).toBeVisible();
   await expectPage(page, DARK_PAGE);
-  await expect(toggle(page)).toHaveAttribute("aria-pressed", "true");
 });
 
-test("switching back to light is kept after a reload", async ({ page }) => {
+test("picking Light on a dark device is kept after a reload", async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: "dark" });
   await page.goto("/dashboard");
-  await toggle(page).click();
-  await expect(toggle(page)).toHaveAttribute("aria-pressed", "true");
-  await page.reload();
-  await toggle(page).click();
-  await expect(toggle(page)).toHaveAttribute("aria-pressed", "false");
+  await expectPage(page, DARK_PAGE);
+  await pickTheme(page, "Light");
+  await expectPage(page, LIGHT_PAGE);
 
   await page.reload();
   await expect(page.locator("html")).not.toHaveAttribute("data-theme");
   await expectPage(page, LIGHT_PAGE);
-  await expect(toggle(page)).toHaveAttribute("aria-pressed", "false");
+  await expectChecked(page, "Light");
 });
 
-test("a saved dark mode is applied before the app runs, so there is no flash of light", async ({
-  page,
-}) => {
-  await saveDark(page);
-  // Swap the app's entry module for one that loads only the stylesheet, so React never runs.
-  // Whatever is dark now was set by the inline script in index.html.
-  await page.route("**/src/main.tsx", (route) =>
-    route.fulfill({
-      contentType: "application/javascript",
-      body: "import '/src/styles.css';",
-    }),
-  );
-  await page.goto("/dashboard");
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await expectPage(page, DARK_PAGE);
-  await expect(page.locator("#root")).toBeEmpty();
-});
+for (const [label, setUp] of [
+  ["a saved Dark", (page: Page) => saveChoice(page, "dark")],
+  [
+    "System on a dark device",
+    (page: Page) => page.emulateMedia({ colorScheme: "dark" }),
+  ],
+] as const) {
+  test(`${label} is applied before the app runs, so there is no flash of light`, async ({
+    page,
+  }) => {
+    await setUp(page);
+    // Swap the app's entry module for one that loads only the stylesheet, so React
+    // never runs. Whatever is dark now was set by the inline script in index.html.
+    await page.route("**/src/main.tsx", (route) =>
+      route.fulfill({
+        contentType: "application/javascript",
+        body: "import '/src/styles.css';",
+      }),
+    );
+    await page.goto("/dashboard");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expectPage(page, DARK_PAGE);
+    await expect(page.locator("#root")).toBeEmpty();
+  });
+}
 
-test("the toggle works from the keyboard and shows a focus ring", async ({
+test("the menu works from the keyboard and shows a focus ring", async ({
   page,
 }) => {
+  await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/dashboard");
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
   for (let i = 0; i < 10; i += 1) {
     await page.keyboard.press("Tab");
-    if (await toggle(page).evaluate((el) => el === document.activeElement))
+    if (await menuButton(page).evaluate((el) => el === document.activeElement))
       break;
   }
-  await expect(toggle(page)).toBeFocused();
-  await expect(toggle(page)).toHaveCSS("outline-style", "solid");
-  await expect(toggle(page)).toHaveCSS("outline-color", "rgb(17, 138, 178)");
+  await expect(menuButton(page)).toBeFocused();
+  await expect(menuButton(page)).toHaveCSS("outline-style", "solid");
 
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByRole("menuitemradio", { name: "Light" }),
+  ).toBeFocused();
+  await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Space");
-  await expect(toggle(page)).toHaveAttribute("aria-pressed", "true");
   await expectPage(page, DARK_PAGE);
-  await expect(toggle(page)).toHaveCSS("outline-color", "rgb(79, 179, 214)");
+  await expect(menuButton(page)).toBeFocused();
 });
 
 test("every section and dialog uses the dark surfaces", async ({ page }) => {
-  await saveDark(page);
+  await saveChoice(page, "dark");
   for (const section of [
     "Dashboard",
     "Organizations",
@@ -137,11 +178,20 @@ test("every section and dialog uses the dark surfaces", async ({ page }) => {
     "color",
     "rgb(205, 216, 219)",
   );
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await menuButton(page).click();
+  await expect(page.getByRole("menu")).toHaveCSS(
+    "background-color",
+    DARK_PANEL,
+  );
 });
 
-test("with storage blocked, the app opens in light and the toggle still works", async ({
+test("with storage blocked, the app follows the device and the menu still works", async ({
   page,
 }) => {
+  await page.emulateMedia({ colorScheme: "light" });
   await page.addInitScript(() => {
     Object.defineProperty(window, "localStorage", {
       get() {
@@ -150,8 +200,13 @@ test("with storage blocked, the app opens in light and the toggle still works", 
     });
   });
   await page.goto("/dashboard");
+  // No storage means no saved session, so sign in for this page only.
+  await page
+    .getByRole("form", { name: "Test sign-in" })
+    .getByLabel("Email")
+    .fill("tester@example.com");
+  await page.getByRole("button", { name: "Sign in for testing" }).click();
   await expectPage(page, LIGHT_PAGE);
-  await toggle(page).click();
-  await expect(toggle(page)).toHaveAttribute("aria-pressed", "true");
+  await pickTheme(page, "Dark");
   await expectPage(page, DARK_PAGE);
 });

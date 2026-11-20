@@ -87,6 +87,9 @@ export function Timeline({ entries, onEdit, onDelete, onMarkDone }: Props) {
         >
           <EntryHead entry={entry} />
           <p className="timeline-text">{entry.text}</p>
+          {entry.kind === 'activity' && entry.created_by && (
+            <p className="timeline-by muted">Added by {entry.created_by}</p>
+          )}
           {entry.kind === 'activity' && (
             <EntryActions
               entry={entry}

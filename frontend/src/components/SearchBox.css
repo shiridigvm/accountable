@@ -1,0 +1,55 @@
+/* Search box and results (search.md, Screen). Colors come from the tokens only. */
+.search {
+  position: relative;
+  width: min(420px, 100%);
+}
+
+.search-input {
+  width: 100%;
+  font: inherit;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.search-input::placeholder {
+  color: var(--muted);
+}
+
+.search-panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 10px 0;
+  border-radius: 14px;
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 20px 60px var(--dialog-shadow);
+}
+
+.search-group {
+  margin: 8px 16px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.search-option {
+  padding: 7px 16px;
+  cursor: pointer;
+}
+
+.search-option[aria-selected='true'] {
+  background: var(--sea-tint);
+}
+
+.search-empty,
+.search-panel .form-error {
+  margin: 4px 16px;
+}

@@ -15,6 +15,7 @@ const call: TimelineEntry = {
   done: false,
   deal_name: 'Big deal',
   contact_name: 'Ada',
+  created_by: 'ana@example.com',
 };
 
 const stage: TimelineEntry = {
@@ -26,6 +27,13 @@ const stage: TimelineEntry = {
 };
 
 describe('Timeline', () => {
+  it('shows who added an activity, and nobody for a stage change (R46)', () => {
+    render(<Timeline entries={[call, stage]} />);
+    const [first, second] = screen.getAllByRole('listitem');
+    expect(within(first).getByText('Added by ana@example.com')).toBeVisible();
+    expect(within(second).queryByText(/Added by/)).not.toBeInTheDocument();
+  });
+
   it('says so when there is nothing to show', () => {
     render(<Timeline entries={[]} />);
     expect(screen.getByText('Nothing has happened yet.')).toBeInTheDocument();

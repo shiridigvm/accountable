@@ -11,7 +11,7 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 @router.post("/reset")
 def reset(request: Request):
-    """Replace all data with the sample data. Only enabled for the end-to-end tests."""
+    """Replace all data with the sample data. Only for the end-to-end tests, never on Postgres."""
     if not reset_allowed():
         raise NotFound("Not found.")
     seed_database(engine_of(request), today())

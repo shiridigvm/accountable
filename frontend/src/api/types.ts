@@ -11,6 +11,8 @@ export type Organization = {
   notes: string | null;
   contact_count: number;
   deal_count: number;
+  created_by: string;
+  updated_by: string;
 };
 
 export type Contact = {
@@ -22,6 +24,8 @@ export type Contact = {
   status: ContactStatus;
   organization_id: number | null;
   organization_name: string | null;
+  created_by: string;
+  updated_by: string;
 };
 
 export type Deal = {
@@ -39,6 +43,8 @@ export type Deal = {
   position: number;
   expected_cents: number;
   late: boolean;
+  created_by: string;
+  updated_by: string;
 };
 
 export type TimelineEntry = {
@@ -53,6 +59,7 @@ export type TimelineEntry = {
   done?: boolean;
   contact_id?: number | null;
   contact_name?: string | null;
+  created_by?: string;
   // Stage change fields
   from_stage?: string;
   to_stage?: string;

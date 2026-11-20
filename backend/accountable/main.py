@@ -1,37 +1,45 @@
-"""The FastAPI app. Startup creates the database and seeds it only when the file is new."""
+"""The FastAPI app.
+
+Startup migrates the database and seeds it only when it had no tables. Every
+router except the sign-in routes needs a signed-in person (R37, R40). When the
+frontend has been built, the same app serves it (R56, R57).
+"""
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import IntegrityError
 
+from accountable.auth import NotSignedIn, SignInServiceDown, require_user
 from accountable.clock import today
-from accountable.config import database_path
+from accountable.config import FRONTEND_DIST, check_settings, database_url
 from accountable.db import make_engine
 from accountable.deals import NotFound
+from accountable.migrate import run_migrations
 from accountable.routes import (
     activities,
     admin,
+    auth,
     contacts,
     dashboard,
     deals,
     organizations,
     pipeline,
+    search,
 )
 from accountable.rules.delete import DeleteRefused
-from accountable.schema import metadata
 from accountable.seed import seed_database
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    path = database_path()
-    is_new = not path.exists() or path.stat().st_size == 0
-    engine = make_engine(path)
-    metadata.create_all(engine)
-    if is_new:
+    check_settings()
+    engine = make_engine(database_url())
+    if run_migrations(engine):
         seed_database(engine, today())
     app.state.engine = engine
     yield
@@ -40,6 +48,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Accountable", lifespan=lifespan)
 
+app.include_router(auth.router)
 for router in (
     organizations.router,
     contacts.router,
@@ -47,9 +56,40 @@ for router in (
     activities.router,
     pipeline.router,
     dashboard.router,
+    search.router,
     admin.router,
 ):
-    app.include_router(router)
+    app.include_router(router, dependencies=[Depends(require_user)])
+
+
+def add_frontend(target: FastAPI, dist: Path) -> None:
+    """Serve the built frontend. Any path outside /api gets index.html, for the router."""
+    if not (dist / "index.html").is_file():
+        return
+    root = dist.resolve()
+    if (dist / "assets").is_dir():
+        target.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
+
+    @target.get("/{path:path}", include_in_schema=False)
+    def frontend(path: str):
+        if path == "api" or path.startswith("api/"):
+            return JSONResponse(status_code=404, content={"error": "Not found."})
+        file = (root / path).resolve()
+        if path and file.is_file() and file.is_relative_to(root):
+            return FileResponse(file)
+        return FileResponse(root / "index.html")
+
+
+@app.exception_handler(NotSignedIn)
+async def not_signed_in(_request: Request, _exc: NotSignedIn):
+    return JSONResponse(status_code=401, content={"error": "Sign in to continue."})
+
+
+@app.exception_handler(SignInServiceDown)
+async def sign_in_service_down(_request: Request, _exc: SignInServiceDown):
+    return JSONResponse(
+        status_code=503, content={"error": "Can't reach the sign-in service."}
+    )
 
 
 @app.exception_handler(DeleteRefused)
@@ -80,3 +120,7 @@ async def integrity(_request: Request, _exc: IntegrityError):
         status_code=422,
         content={"error": "A linked record does not exist, or a value is not allowed."},
     )
+
+
+# Registered last, so the API routes match first.
+add_frontend(app, FRONTEND_DIST)

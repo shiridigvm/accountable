@@ -1,0 +1,31 @@
+# Accountable on Render's free plan (R57): one web service that serves the built
+# frontend and the API. Migrations run when the app starts.
+#
+# The three settings are entered in Render's dashboard when the Blueprint is set
+# up (sync: false), never written here. There is no `branch:` line, so the
+# service deploys the branch chosen in Render.
+services:
+  - type: web
+    name: accountable
+    runtime: python
+    plan: free
+    # Render's native runtimes include Node and npm, and use uv when uv.lock exists.
+    buildCommand: npm ci && npm run build && uv sync --locked
+    startCommand: uv run -m uvicorn accountable.main:app --host 0.0.0.0 --port $PORT
+    autoDeployTrigger: checksPass
+    envVars:
+      # Render's default Python is newer than pyproject.toml allows.
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: NODE_VERSION
+        value: "26"
+      # Render runs on UTC. "Today" drives late deals, follow-ups and the
+      # dashboard, so it must be the team's date (decision 21).
+      - key: TZ
+        value: Australia/Brisbane
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false

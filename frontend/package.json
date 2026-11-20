@@ -19,6 +19,7 @@
     "@fontsource/instrument-sans": "^5.3.0",
     "@fontsource/instrument-serif": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
+    "@supabase/supabase-js": "^2.119.2",
     "@tanstack/react-table": "^8.21.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

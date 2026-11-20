@@ -28,6 +28,8 @@ const deal: Deal = {
   position: 0,
   expected_cents: 250000,
   late: false,
+  created_by: 'ana@example.com',
+  updated_by: 'ben@example.com',
 };
 
 const entries: TimelineEntry[] = [
@@ -90,6 +92,13 @@ describe('DealDetail', () => {
       await screen.findByRole('heading', { name: 'Big renewal' }),
     ).toBeInTheDocument();
     expect(screen.getByText('Proposal · $5,000.00')).toBeInTheDocument();
+    // R46: who added and last changed the record, in the summary panel.
+    expect(screen.getByText('Added by').nextElementSibling).toHaveTextContent(
+      'ana@example.com',
+    );
+    expect(
+      screen.getByText('Last changed by').nextElementSibling,
+    ).toHaveTextContent('ben@example.com');
     expect(screen.getByText('50%')).toBeInTheDocument();
     expect(screen.getByText('$2,500.00')).toBeInTheDocument();
     expect(screen.getByText('Dec 1, 2026')).toBeInTheDocument();

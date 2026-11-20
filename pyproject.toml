@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "Accountable: a local sales CRM"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.20.1",
     "fastapi>=0.163.1",
+    "psycopg[binary]>=3.3.9",
     "sqlalchemy>=2.1.9",
     "uvicorn>=0.54.0",
 ]

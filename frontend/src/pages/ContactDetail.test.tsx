@@ -18,6 +18,8 @@ const contact: Contact = {
   status: 'customer',
   organization_id: 3,
   organization_name: 'Acme',
+  created_by: 'ana@example.com',
+  updated_by: 'ben@example.com',
 };
 
 const entries: TimelineEntry[] = [
@@ -79,6 +81,13 @@ describe('ContactDetail', () => {
     expect(
       await screen.findByRole('heading', { name: 'Ana Lopez' }),
     ).toBeInTheDocument();
+    // R46: who added and last changed the record, in the summary panel.
+    expect(screen.getByText('Added by').nextElementSibling).toHaveTextContent(
+      'ana@example.com',
+    );
+    expect(
+      screen.getByText('Last changed by').nextElementSibling,
+    ).toHaveTextContent('ben@example.com');
     expect(screen.getByText(/Buyer/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Acme' })).toHaveAttribute(
       'href',

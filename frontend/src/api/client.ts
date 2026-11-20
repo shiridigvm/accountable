@@ -1,4 +1,6 @@
 // One place for HTTP. Every error from the backend becomes an ApiError with a readable message.
+// Every request carries the signed-in person's token (R40). A 401 means the session is over.
+import { getAccessToken, sessionEnded } from '../lib/auth';
 
 export class ApiError extends Error {
   readonly status: number;
@@ -15,6 +17,14 @@ export class ApiError extends Error {
   }
 }
 
+function requestHeaders(hasBody: boolean): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (hasBody) headers['Content-Type'] = 'application/json';
+  const token = getAccessToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
 export async function api<T>(
   method: string,
   path: string,
@@ -24,8 +34,7 @@ export async function api<T>(
   try {
     response = await fetch(path, {
       method,
-      headers:
-        body === undefined ? undefined : { 'Content-Type': 'application/json' },
+      headers: requestHeaders(body !== undefined),
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
@@ -34,6 +43,7 @@ export async function api<T>(
       0,
     );
   }
+  if (response.status === 401) sessionEnded();
   if (response.status === 204) return undefined as T;
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {

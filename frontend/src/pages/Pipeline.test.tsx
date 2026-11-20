@@ -40,6 +40,8 @@ function deal(id: number, over: Partial<BoardDeal> = {}): BoardDeal {
     position: 0,
     expected_cents: 10000,
     late: false,
+    created_by: 'ana@example.com',
+    updated_by: 'ben@example.com',
     ...over,
   };
 }

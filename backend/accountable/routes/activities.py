@@ -4,7 +4,7 @@ from fastapi import APIRouter, Request, Response
 
 from accountable import store
 from accountable.clock import today
-from accountable.routes.common import engine_of, require
+from accountable.routes.common import added_by, changed_by, engine_of, require
 from accountable.rules.timeline import activity_entry, merge_newest_first
 from accountable.schemas import ActivityIn, ActivityPatch
 
@@ -25,6 +25,7 @@ def create_activity(body: ActivityIn, request: Request):
     data = body.model_dump()
     data["occurred_on"] = data["occurred_on"] or today()
     data["created_at"] = datetime.now()
+    data |= added_by(request)
     with engine_of(request).begin() as conn:
         if data["contact_id"] is not None:
             require(
@@ -44,7 +45,11 @@ def create_activity(body: ActivityIn, request: Request):
 def update_activity(activity_id: int, body: ActivityPatch, request: Request):
     with engine_of(request).begin() as conn:
         require(store.get_activity(conn, activity_id), "Activity", activity_id)
-        store.update_activity(conn, activity_id, body.model_dump(exclude_unset=True))
+        store.update_activity(
+            conn,
+            activity_id,
+            body.model_dump(exclude_unset=True) | changed_by(request),
+        )
         return activity_entry(
             require(store.get_activity(conn, activity_id), "Activity", activity_id)
         )

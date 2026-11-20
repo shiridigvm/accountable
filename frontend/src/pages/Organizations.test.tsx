@@ -18,6 +18,8 @@ const orgs: Organization[] = [
     notes: null,
     contact_count: 2,
     deal_count: 1,
+    created_by: 'ana@example.com',
+    updated_by: 'ben@example.com',
   },
   {
     id: 2,
@@ -27,6 +29,8 @@ const orgs: Organization[] = [
     notes: 'Big account',
     contact_count: 0,
     deal_count: 0,
+    created_by: 'ana@example.com',
+    updated_by: 'ben@example.com',
   },
 ];
 

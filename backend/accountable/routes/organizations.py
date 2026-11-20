@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Response
 
 from accountable import store
-from accountable.routes.common import engine_of, require
+from accountable.routes.common import added_by, changed_by, engine_of, require
 from accountable.rules.delete import check_deletable
 from accountable.rules.timeline import (
     activity_entry,
@@ -22,7 +22,7 @@ def list_organizations(request: Request):
 @router.post("", status_code=201)
 def create_organization(body: OrganizationIn, request: Request):
     with engine_of(request).begin() as conn:
-        org_id = store.insert_organization(conn, body.model_dump())
+        org_id = store.insert_organization(conn, body.model_dump() | added_by(request))
         return store.get_organization(conn, org_id)
 
 
@@ -36,7 +36,9 @@ def get_organization(org_id: int, request: Request):
 def update_organization(org_id: int, body: OrganizationPatch, request: Request):
     with engine_of(request).begin() as conn:
         require(store.get_organization(conn, org_id), "Organization", org_id)
-        store.update_organization(conn, org_id, body.model_dump(exclude_unset=True))
+        store.update_organization(
+            conn, org_id, body.model_dump(exclude_unset=True) | changed_by(request)
+        )
         return store.get_organization(conn, org_id)
 
 

@@ -48,8 +48,13 @@ def move_deal(
     position: int,
     today: date,
     now: datetime,
+    by: str,
 ) -> None:
-    """Place a deal in a column at a position, renumber both columns, log a stage change."""
+    """Place a deal in a column at a position, renumber both columns, log a stage change.
+
+    Only the moved deal records who changed it. Renumbering the others is not a
+    change to them (R44).
+    """
     deal = _fetch(conn, deal_id)
     from_stage = deal["stage"]
     changed = from_stage != to_stage
@@ -72,6 +77,7 @@ def move_deal(
                 ),
             },
         )
+    store.update_deal_fields(conn, deal_id, {"updated_by": by})
     for pos, other_id in enumerate(order):
         store.set_deal_position(conn, other_id, pos)
 
@@ -82,7 +88,7 @@ def move_deal(
 
 
 def update_deal(
-    conn: Connection, deal_id: int, data: dict, today: date, now: datetime
+    conn: Connection, deal_id: int, data: dict, today: date, now: datetime, by: str
 ) -> None:
     """Edit a deal. A stage change goes through move_deal, to the end of the new column."""
     deal = _fetch(conn, deal_id)
@@ -93,9 +99,9 @@ def update_deal(
         data["probability"] = DEFAULT_PROBABILITY[stage or deal["stage"]]
     if stage is not None and stage != deal["stage"]:
         end = len(store.column_deal_ids(conn, stage))
-        move_deal(conn, deal_id, stage, end, today, now)
+        move_deal(conn, deal_id, stage, end, today, now, by)
     # A probability sent with the request is typed by hand, so it wins over the stage default.
-    store.update_deal_fields(conn, deal_id, data)
+    store.update_deal_fields(conn, deal_id, data | {"updated_by": by})
 
 
 def delete_deal(conn: Connection, deal_id: int) -> None:

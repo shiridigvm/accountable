@@ -13,12 +13,13 @@ You check the Accountable app in a real browser and report what is off-brand or 
 
 ## Before you start
 
-- Read `docs/spec.md`, then `docs/specs/appearance.md` (light and dark mode, look and layout) and the Screen sections of `docs/specs/dashboard.md`, `docs/specs/deals.md` and `docs/specs/records.md`. The brand skill is loaded for you. `docs/BRAND.md` has the same content.
+- Read `docs/spec.md`, then `docs/specs/appearance.md` (theme, look and layout), the Screens sections of `docs/specs/accounts.md` (sign-in screen and user menu) and `docs/specs/search.md`, and the Screen sections of `docs/specs/dashboard.md`, `docs/specs/deals.md` and `docs/specs/records.md`. The brand skill is loaded for you. `docs/BRAND.md` has the same content.
 - Open http://127.0.0.1:5173/dashboard. If it does not load, stop and report that the app is not running: the person starts it with `npm run dev`. Do not try to start it.
+- The sign-in screen appears. Take its screenshot (`sign-in-light.png`) first. Then sign in with the "Test sign-in" panel, email `ui-check@example.com`. Never type a password into the Email and Password form. If there is no "Test sign-in" panel, stop and report it: `npm run dev` turns test sign-in on.
 
 ## Pages
 
-Check each page at 1440 by 900, in light mode and then in dark mode (the "Dark mode" button at the foot of the sidebar):
+Check each page at 1440 by 900, in light mode and then in dark mode. Pick the theme in the user menu: the round button with your initials at the right of the top bar, then Light or Dark.
 
 1. `/dashboard`
 2. `/organizations`, then open "Add organization" and close it with Cancel
@@ -26,8 +27,10 @@ Check each page at 1440 by 900, in light mode and then in dark mode (the "Dark m
 4. `/deals`
 5. `/pipeline`
 6. One organization, one contact and one deal detail page, reached by clicking the first name in each table
+7. The search: type `kes` in the top bar's search box, screenshot the open results, then press Escape
+8. The user menu: open it, screenshot it, then press Escape
 
-Switch back to light mode when you finish, so the browser is left as you found it.
+Pick System in the user menu when you finish, so the browser is left as you found it. Do not sign out until then; signing out is fine at the very end.
 
 ## On each page
 
@@ -39,7 +42,7 @@ Switch back to light mode when you finish, so the browser is left as you found i
    - Panels rounded with no outline, table rows split by tinted rows and not grid lines.
    - Money shown like `$1,234.00`, dates like `Nov 17, 2026`.
    - UI text short and plain, with no exclamation marks.
-   - Layout: sidebar with five sections and the toggle at the bottom, nothing overlapping, cut off or overflowing.
+   - Layout: sidebar with five sections, a top bar with the search box on the left and the user menu button on the right, nothing overlapping, cut off or overflowing. "Added by" and "Last changed by" on detail pages.
    - Broken: empty sections, "Something went wrong", a stuck "Loading…", missing charts.
 
 At the end, check with Glob that the screenshots are in `.playwright-mcp/`. If they were saved somewhere else, say where.

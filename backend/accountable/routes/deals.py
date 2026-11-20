@@ -3,9 +3,10 @@ from datetime import datetime
 from fastapi import APIRouter, Request, Response
 
 from accountable import store
+from accountable.auth import user_of
 from accountable.clock import today
 from accountable.deals import create_deal, delete_deal, move_deal, update_deal
-from accountable.routes.common import engine_of, require
+from accountable.routes.common import added_by, engine_of, require
 from accountable.rules.delete import check_deletable
 from accountable.rules.pipeline import with_derived
 from accountable.rules.timeline import (
@@ -27,7 +28,7 @@ def list_deals(request: Request):
 @router.post("", status_code=201)
 def create(body: DealIn, request: Request):
     with engine_of(request).begin() as conn:
-        deal_id = create_deal(conn, body.model_dump(), today())
+        deal_id = create_deal(conn, body.model_dump() | added_by(request), today())
         deal = require(store.get_deal(conn, deal_id), "Deal", deal_id)
         return with_derived(deal, today())
 
@@ -44,7 +45,12 @@ def update(deal_id: int, body: DealPatch, request: Request):
     with engine_of(request).begin() as conn:
         require(store.raw_deal(conn, deal_id), "Deal", deal_id)
         update_deal(
-            conn, deal_id, body.model_dump(exclude_unset=True), today(), datetime.now()
+            conn,
+            deal_id,
+            body.model_dump(exclude_unset=True),
+            today(),
+            datetime.now(),
+            user_of(request),
         )
         deal = require(store.get_deal(conn, deal_id), "Deal", deal_id)
         return with_derived(deal, today())
@@ -54,7 +60,15 @@ def update(deal_id: int, body: DealPatch, request: Request):
 def move(deal_id: int, body: MoveIn, request: Request):
     with engine_of(request).begin() as conn:
         require(store.raw_deal(conn, deal_id), "Deal", deal_id)
-        move_deal(conn, deal_id, body.stage, body.position, today(), datetime.now())
+        move_deal(
+            conn,
+            deal_id,
+            body.stage,
+            body.position,
+            today(),
+            datetime.now(),
+            user_of(request),
+        )
         deal = require(store.get_deal(conn, deal_id), "Deal", deal_id)
         return with_derived(deal, today())
 

@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import type { Contact, Deal, Organization, TimelineEntry } from '../api/types';
 import { useResource } from '../api/useResource';
 import { Timeline } from '../components/Timeline';
+import { AddedBy } from '../components/AddedBy';
 import { PageHeader } from '../components/PageHeader';
 import { formatMoney } from '../lib/format';
 import { STAGE_COLORS } from '../lib/stages';
@@ -45,6 +46,10 @@ export default function OrganizationDetail() {
         <p className="muted">
           {org.data.contact_count} contacts · {org.data.deal_count} deals
         </p>
+        <AddedBy
+          createdBy={org.data.created_by}
+          updatedBy={org.data.updated_by}
+        />
       </section>
       <div className="detail-grid">
         <div className="stack">

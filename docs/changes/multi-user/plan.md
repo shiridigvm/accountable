@@ -24,8 +24,8 @@ The spec leaves these open. A change to any of them goes into this plan first.
    - The backend never reads `.env` itself.
 7. **Migrations.** Alembic runs from code (`migrate.py`), with no `alembic.ini`, and the scripts live in `backend/accountable/migrations/`.
    - `0001` creates today's five tables.
-   - `0002` adds `created_by` and `updated_by`. Existing rows get "Unknown" (R45), then the default is dropped so a missing value is an error, not a silent "Unknown".
-   - `0003` turns on row-level security on Postgres and does nothing on SQLite. Postgres has no SQLAlchemy Core construct for this, so `0003` uses `op.execute("ALTER TABLE … ENABLE ROW LEVEL SECURITY")`. That is the one place with raw SQL, and its comment says why.
+   - `0002` adds `created_by` and `updated_by`. Existing rows get "Unknown" (R45). The "Unknown" default stays on the columns: dropping it would mean rebuilding each table on SQLite, and rebuilding a table that other tables point at breaks their foreign keys. Instead, `test_who_added.py` checks that every write sets both columns.
+   - `0003` turns on row-level security on Postgres and does nothing on SQLite. It covers `alembic_version` too, which also sits in the public schema. Postgres has no SQLAlchemy Core construct for this, so `0003` uses `op.execute("ALTER TABLE … ENABLE ROW LEVEL SECURITY")`. That is the one place with raw SQL, and its comment says why.
    - An existing SQLite file made by `create_all` has the tables but no `alembic_version`. `migrate.py` marks it as being at `0001` first, then upgrades it.
 8. **When to seed (R28).** `migrate.py` reports whether the database had no tables before it ran. The app seeds only then. "Empty" means "new", so a team that deletes every record is not re-seeded on the next restart.
 9. **Search runs in Python (R51 to R53).** The backend reads the id and name of every organization, contact and deal, plus each contact's organization name, and filters them in `rules/search.py`. It lower-cases A to Z only, matches the text literally, sorts by name and keeps 5 of each kind. Postgres's `lower()` also folds É to é and SQLite's doesn't, so filtering in SQL would break R52. Accountable's data is small (decision 8), so reading every name is cheap.
@@ -60,14 +60,15 @@ Each part owns its files, and only that part's agent edits them. These are the a
 | `backend/accountable/routes/auth.py` (new)                                                                                    | 1     | `GET /api/auth/config`, `POST /api/auth/test-sign-in`, `GET /api/me`.                                                                                                                                                                                                           |
 | `backend/accountable/main.py`                                                                                                 | 1, 2  | Lifespan: refuse to start with test sign-in on Postgres (R43), run migrations, seed when new. Include routers with `require_user`. Serve `frontend/dist` with an `index.html` fallback outside `/api` when it exists. 401 and 503 handlers. Phase 2: include the search router. |
 | `backend/accountable/schema.py`                                                                                               | 1     | `created_by` and `updated_by` on four tables (kept in step with the migrations).                                                                                                                                                                                                |
-| `backend/accountable/store.py`, `backend/accountable/deals.py`                                                                | 1     | Write `created_by` and `updated_by` on insert, and `updated_by` on update and on the moved deal (choice 5).                                                                                                                                                                     |
-| `backend/accountable/routes/organizations.py`, `contacts.py`, `deals.py`, `activities.py`                                     | 1     | Pass `request.state.user_email` on writes.                                                                                                                                                                                                                                      |
+| `backend/accountable/routes/common.py`                                                                                        | 1     | `added_by(request)` and `changed_by(request)`: the who fields for a write, from `request.state.user_email` (choice 5).                                                                                                                                                          |
+| `backend/accountable/deals.py`                                                                                                | 1     | `move_deal` and `update_deal` take `by`, and set `updated_by` on the moved or edited deal only. `store.py` needs no change: the routes add the who fields to the data they pass it.                                                                                             |
+| `backend/accountable/routes/organizations.py`, `contacts.py`, `deals.py`, `activities.py`                                     | 1     | Add the who fields on writes.                                                                                                                                                                                                                                                   |
 | `backend/accountable/routes/admin.py`                                                                                         | 1     | Reset answers 404 on Postgres.                                                                                                                                                                                                                                                  |
 | `backend/accountable/rules/timeline.py`                                                                                       | 1     | Activity entries carry `created_by`.                                                                                                                                                                                                                                            |
 | `backend/accountable/seed.py`                                                                                                 | 1     | Write "Sample data" as who added and changed each record. `main()` refuses when `DATABASE_URL` is Postgres (R27) and uses `run_migrations` instead of `create_all`.                                                                                                             |
 | `backend/tests/conftest.py`                                                                                                   | 1     | Remove `DATABASE_URL` and the Supabase settings from the environment. Turn on test sign-in, and give `client` a test token by default. Add an `anon_client` fixture with no token.                                                                                              |
 | `backend/tests/test_auth.py`, `test_who_added.py`, `test_migrations.py`, `test_config.py`, `test_serve_frontend.py` (new)     | 1     | See Proof.                                                                                                                                                                                                                                                                      |
-| `backend/tests/test_seed_and_persistence.py`, `test_timeline.py`                                                              | 1     | The seed refusal and the new seeding rule. The loopback check moves to `test_config.py`. Timeline entries carry `created_by`.                                                                                                                                                   |
+| `backend/tests/test_seed_and_persistence.py`                                                                                  | 1     | The seed refusal and the new seeding rule. The loopback check moves to `test_config.py`. (`test_timeline.py` needed no change: timeline `created_by` is tested in `test_who_added.py`.)                                                                                         |
 
 ### Part B: backend search
 
@@ -80,17 +81,19 @@ Each part owns its files, and only that part's agent edits them. These are the a
 
 ### Part C: frontend sign-in, session and who added
 
-| Path                                                                                               | Phase | Change                                                                                                                 |
-| -------------------------------------------------------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
-| `frontend/package.json`, `package-lock.json`                                                       | 1     | Add `@supabase/supabase-js`.                                                                                           |
-| `frontend/src/lib/auth.ts`, `auth.test.ts` (new)                                                   | 1     | Load the config, sign in with Supabase or test sign-in, get the access token, `signOut`, `useSession`, `AuthProvider`. |
-| `frontend/src/api/client.ts`, `client.test.ts` (new)                                               | 1     | Send `Authorization: Bearer`. A 401 ends the session, and a 503 gives the sign-in service message.                     |
-| `frontend/src/components/AuthGate.tsx`, `AuthGate.test.tsx` (new)                                  | 1     | Shows the sign-in screen in place when signed out (choice 10).                                                         |
-| `frontend/src/pages/SignIn.tsx`, `SignIn.test.tsx`, `SignIn.css` (new)                             | 1     | The sign-in screen and the test sign-in panel (accounts.md, Screens).                                                  |
-| `frontend/src/App.tsx`, `App.test.tsx`                                                             | 1     | Wrap the routes in `AuthProvider` and `AuthGate`.                                                                      |
-| `frontend/src/api/types.ts`                                                                        | 1     | `created_by` and `updated_by` on records, and `created_by` on timeline entries.                                        |
-| `frontend/src/pages/OrganizationDetail.tsx`, `ContactDetail.tsx`, `DealDetail.tsx` and their tests | 1     | "Added by" and "Last changed by" in the summary panel (R46).                                                           |
-| `frontend/src/components/Timeline.tsx`, `Timeline.test.tsx`                                        | 1     | "Added by" on each activity (R46).                                                                                     |
+| Path                                                                                               | Phase | Change                                                                                                                               |
+| -------------------------------------------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `frontend/package.json`, `package-lock.json`                                                       | 1     | Add `@supabase/supabase-js`.                                                                                                         |
+| `frontend/src/lib/auth.ts`, `auth.test.ts` (new)                                                   | 1     | A small store (no `AuthProvider` needed): `startAuth`, `useAuth`, `useSession`, `signIn`, `testSignIn`, `signOut`, `getAccessToken`. |
+| `frontend/src/api/client.ts`, `client.test.ts` (new)                                               | 1     | Send `Authorization: Bearer`. A 401 ends the session, and a 503 gives the sign-in service message.                                   |
+| `frontend/src/components/AuthGate.tsx`, `AuthGate.test.tsx` (new)                                  | 1     | Shows the sign-in screen in place when signed out (choice 10).                                                                       |
+| `frontend/src/pages/SignIn.tsx`, `SignIn.test.tsx`, `SignIn.css` (new)                             | 1     | The sign-in screen and the test sign-in panel (accounts.md, Screens).                                                                |
+| `frontend/src/App.tsx`, `App.test.tsx`                                                             | 1     | Wrap the routes in `AuthGate`.                                                                                                       |
+| `frontend/src/api/types.ts`                                                                        | 1     | `created_by` and `updated_by` on records, and `created_by` on timeline entries.                                                      |
+| `frontend/src/pages/OrganizationDetail.tsx`, `ContactDetail.tsx`, `DealDetail.tsx` and their tests | 1     | "Added by" and "Last changed by" in the summary panel (R46).                                                                         |
+| `frontend/src/components/Timeline.tsx`, `Timeline.test.tsx`                                        | 1     | "Added by" on each activity (R46).                                                                                                   |
+| `frontend/src/components/AddedBy.tsx` (new)                                                        | 1     | The "Added by" and "Last changed by" facts, shared by the three detail pages.                                                        |
+| Test fixtures in `frontend/src/pages/*.test.tsx`                                                   | 1     | Records in the fixtures gain `created_by` and `updated_by`.                                                                          |
 
 ### Part D: frontend search box
 
@@ -101,15 +104,16 @@ Each part owns its files, and only that part's agent edits them. These are the a
 
 ### Part E: frontend top bar, user menu and theme
 
-| Path                                                                              | Phase | Change                                                                                                                |
-| --------------------------------------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------- |
-| `frontend/src/components/Layout.tsx`, `Layout.test.tsx`                           | 2, 3  | Phase 2: the top bar with `<SearchBox />`. Phase 3: remove the toggle, add `<UserMenu />`, and the narrow-screen bar. |
-| `frontend/src/styles.css`                                                         | 2, 3  | Top bar and narrow-screen layout. Remove the toggle styles.                                                           |
-| `frontend/src/lib/initials.ts`, `initials.test.ts` (new)                          | 3     | R47.                                                                                                                  |
-| `frontend/src/components/UserMenu.tsx`, `UserMenu.test.tsx`, `UserMenu.css` (new) | 3     | The menu: email, theme choice, Sign out, and the keyboard (R48, R49).                                                 |
-| `frontend/src/lib/theme.ts`, `theme.test.ts`                                      | 3     | `system`, resolving it and following changes (choice 11).                                                             |
-| `frontend/index.html`                                                             | 3     | The inline script resolves `system`, which is now the default.                                                        |
-| `frontend/src/styles.test.ts`                                                     | 3     | Check every other `.css` file for color literals (choice 12).                                                         |
+| Path                                                                              | Phase | Change                                                                                                        |
+| --------------------------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------- |
+| `frontend/src/components/Layout.tsx`, `Layout.test.tsx`                           | 3     | The top bar with `<SearchBox />` and `<UserMenu />`, and the toggle removed. Built in one step (see Phase 2). |
+| `frontend/src/styles.css`                                                         | 3     | Top bar and narrow-screen layout. Remove the toggle styles.                                                   |
+| `frontend/src/main.tsx`                                                           | 3     | Calls `startTheme()`, so System follows the device on every screen, the sign-in screen included.              |
+| `frontend/src/lib/initials.ts`, `initials.test.ts` (new)                          | 3     | R47.                                                                                                          |
+| `frontend/src/components/UserMenu.tsx`, `UserMenu.test.tsx`, `UserMenu.css` (new) | 3     | The menu: email, theme choice, Sign out, and the keyboard (R48, R49).                                         |
+| `frontend/src/lib/theme.ts`, `theme.test.ts`                                      | 3     | `system`, resolving it and following changes (choice 11).                                                     |
+| `frontend/index.html`                                                             | 3     | The inline script resolves `system`, which is now the default.                                                |
+| `frontend/src/styles.test.ts`                                                     | 3     | Check every other `.css` file for color literals (choice 12).                                                 |
 
 ### Part F: running, deploying, end-to-end tests and docs
 
@@ -150,12 +154,12 @@ Each phase ends with `npm run check` passing. Within a phase, the parts can be b
 - **B:** `rules/search.py`, `search.py`, `routes/search.py` and their tests.
 - **A:** include the search router in `main.py`.
 - **D:** `SearchBox` and `api/search.ts`.
-- **E:** the top bar in `Layout.tsx` with `<SearchBox />`, and its styles at both widths.
-- **F:** `search.spec.ts`, and the top bar in `layout.spec.ts`.
+- **E:** moved to Phase 3. The narrow-screen bar places the search box and the menu in one grid, so building the top bar twice, first with the old toggle still in the sidebar, would have meant throwaway layout work.
+- **F:** `search.spec.ts`, run once the top bar was in, at the end of Phase 3.
 
 ### Phase 3: the user menu
 
-- **E:** `initials.ts`, `UserMenu`, `theme.ts` with System, `index.html`, the toggle removed, the token test widened.
+- **E:** the top bar in `Layout.tsx` with `<SearchBox />` and `<UserMenu />`, its styles at both widths, `initials.ts`, `UserMenu`, `theme.ts` with System, `index.html`, the toggle removed, the token test widened.
 - **F:** sign out in `auth.spec.ts`, `theme.spec.ts` on the menu, the menu in `layout.spec.ts`, and the ui-check update.
 - **Check by hand:** run ui-check against `npm run dev`.
 
@@ -170,7 +174,7 @@ Each phase ends with `npm run check` passing. Within a phase, the parts can be b
 | Risk                                                             | Effect                                                                                | What this plan does                                                                                                                                                                                                 |
 | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Test sign-in reaches the real data                               | Anyone could open the team's data with no password                                    | The app refuses to start with test sign-in on Postgres (R43). `test-` tokens are never accepted unless the variable is set. Both are tested. The tests and `run.mjs` remove `DATABASE_URL`.                         |
-| A route misses the sign-in check                                 | Data readable without signing in                                                      | One dependency on every router (choice 4), and a test over `app.routes` (Proof).                                                                                                                                    |
+| A route misses the sign-in check                                 | Data readable without signing in                                                      | One dependency on every router (choice 4), and a test over every `/api` route in the OpenAPI schema (Proof). This FastAPI version wraps included routers, so `app.routes` doesn't list them.                        |
 | Supabase's Data API exposes the tables                           | The publishable key is public, so anyone could read or change the data                | Migration `0003` turns on row-level security with no policies. Checked by hand with the MCP server and a Data API read (Phase 1). New tables need the same (`data.md`).                                             |
 | Sign-ups left on in Supabase                                     | Anyone could create an account                                                        | Out of the code's reach. The student turned them off during setup, and the Phase 1 check confirms it with `course/check_supabase.py`.                                                                               |
 | Postgres behavior is never covered by automated tests            | A Postgres-only fault (the driver, migrations, row-level security) shows up on Render | Every query goes through SQLAlchemy Core. Search avoids database case rules (choice 9). Run by hand with `npm start` against Supabase, in Phase 1 and before the merge.                                             |
@@ -256,16 +260,19 @@ Each phase ends with `npm run check` passing. Within a phase, the parts can be b
 ### End-to-end tests (Playwright)
 
 - `auth.spec.ts`:
-  - Signed out, every section shows the sign-in screen (success criterion 2).
-  - Test sign-in opens the page that was asked for (R39).
-  - Sign out returns to the sign-in screen (R42).
-  - A reload keeps the session.
-- `detail.spec.ts`: a record added by `ana@example.com` shows "Added by ana@example.com". A sample record shows "Sample data" (success criterion 3).
-- `search.spec.ts`: finds an organization, a contact and a deal by part of a name in mixed case, and opens each one (success criterion 4).
+  - Signed out, every section shows the sign-in screen and the API answers 401 (success criterion 2).
+  - Test sign-in opens the page that was asked for, and a reload keeps the session (R39).
+  - Password sign-in without Supabase settings says the sign-in service can't be reached.
+  - Sign out returns to the sign-in screen, and a reload stays signed out (R42).
+  - The sign-in screen follows a dark device.
+- `detail.spec.ts`: a sample record shows "Sample data". A record added by `ana@example.com` and changed by `ben@example.com` shows both. A logged activity shows who added it (success criterion 3).
+- `search.spec.ts`: finds an organization, a contact and a deal by part of a name in mixed case, and opens each one (success criterion 4). A contact result shows its organization. The keyboard opens a result. "No matches", and Escape closes the list.
 - `theme.spec.ts`:
-  - Picking Dark in the menu applies it and keeps it after a reload, with no flash.
-  - With System, emulating a dark device gives dark (success criterion 5).
-- `layout.spec.ts`: the top bar at 1440px, and the search box and menu in the narrow bar at 700px.
+  - System is the default. It follows a light device, a dark device, and a change while the app is open (success criterion 5).
+  - Picking Dark, or Light on a dark device, in the menu applies it and keeps it after a reload.
+  - No flash, for a saved Dark and for System on a dark device.
+  - The menu works from the keyboard, every section and dialog uses the dark surfaces, and with storage blocked the menu still works.
+- `layout.spec.ts`: the top bar at 1440px, the narrow bar at 390px (wordmark and menu, then search, then the links), and the menu inside the window at 700px.
 - The existing specs run signed in and keep passing.
 
 ### By hand

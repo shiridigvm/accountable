@@ -26,6 +26,8 @@ const deal = (over: Partial<Deal>): Deal => ({
   position: 0,
   expected_cents: 123450,
   late: false,
+  created_by: 'ana@example.com',
+  updated_by: 'ben@example.com',
   ...over,
 });
 
@@ -38,6 +40,8 @@ const orgs: Organization[] = [
     notes: null,
     contact_count: 1,
     deal_count: 1,
+    created_by: 'ana@example.com',
+    updated_by: 'ben@example.com',
   },
 ];
 const contacts: Contact[] = [
@@ -50,6 +54,8 @@ const contacts: Contact[] = [
     status: 'Active',
     organization_id: 10,
     organization_name: 'Acme',
+    created_by: 'ana@example.com',
+    updated_by: 'ben@example.com',
   },
 ];
 

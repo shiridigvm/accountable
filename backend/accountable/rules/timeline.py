@@ -19,6 +19,7 @@ def activity_entry(row: dict) -> dict:
         "contact_name": row["contact_name"],
         "deal_id": row["deal_id"],
         "deal_name": row["deal_name"],
+        "created_by": row["created_by"],
     }
 
 

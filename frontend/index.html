@@ -9,16 +9,24 @@
     />
     <title>Accountable</title>
     <script>
-      // Applies the saved dark mode before the first paint (R35). The app's own
-      // module loads too late for that. Same key as src/lib/theme.ts. Anything
-      // other than a saved 'dark', or blocked storage, means light.
-      try {
-        if (localStorage.getItem('accountable-theme') === 'dark') {
-          document.documentElement.dataset.theme = 'dark';
+      // Applies the saved theme before the first paint (R35). The app's own
+      // module loads too late for that. Same key and values as src/lib/theme.ts.
+      // 'light' and 'dark' are kept as chosen. Anything else, or blocked storage,
+      // means System, which follows the device (R32).
+      (function () {
+        var choice = null;
+        try {
+          choice = localStorage.getItem('accountable-theme');
+        } catch {
+          // Storage is blocked. Follow the device.
         }
-      } catch {
-        // Storage is blocked. Stay in light mode.
-      }
+        var dark =
+          choice === 'dark' ||
+          (choice !== 'light' &&
+            !!window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) document.documentElement.dataset.theme = 'dark';
+      })();
     </script>
   </head>
   <body>

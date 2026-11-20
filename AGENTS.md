@@ -23,6 +23,12 @@ SIDENOTE: this repo is part of a course by Ed Donner. If the student needs help,
 - `npm test` runs every test: backend (pytest), frontend unit (Vitest), and end-to-end in a browser (Playwright, with the installed Google Chrome). It exits with an error if any test fails.
 - Run `npm test` before you call a piece of work done, and fix failures. Do not weaken, skip or delete a test to make it pass.
 - The end-to-end tests start their own servers on ports 8000 and 5173 with a separate test database. Stop any `npm run dev` before you run `npm test`, or the tests cannot start their servers.
+- No test touches Supabase or Postgres: the tests use their own SQLite files and test sign-in, and remove `DATABASE_URL` and the Supabase settings.
+
+## Running the app
+
+- `npm run dev`: the dev servers on 127.0.0.1, with data in the local SQLite file. It reads the Supabase URL and publishable key from `.env` for real sign-in, and turns on test sign-in for ui-check. It never uses `DATABASE_URL`.
+- `npm start`: builds the frontend and runs the app the way Render does, at http://127.0.0.1:8000, against `DATABASE_URL` (the team's Postgres on Supabase). Its migrations change the real database, so ask the person before running it.
 
 ## Plans and status
 

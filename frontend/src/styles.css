@@ -127,88 +127,87 @@ h2 {
   color: var(--ink);
 }
 
-/* Light and dark mode toggle (R33). It stays in view at the foot of the
-   sidebar on long pages. The switch is drawn in CSS so it adds no text to the
-   button's name; aria-pressed carries the state. */
-.theme-toggle {
-  margin-top: auto;
-  position: sticky;
-  bottom: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 9px 12px;
-  border: 0;
-  border-radius: 10px;
-  background: none;
-  font: inherit;
-  font-weight: 500;
-  color: var(--muted);
-  cursor: pointer;
-}
-
-.theme-toggle::after {
-  content: '';
-  width: 28px;
-  height: 16px;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 8px 50%, var(--muted) 5px, transparent 5.5px),
-    var(--lane);
-}
-
-.theme-toggle[aria-pressed='true'] {
-  color: var(--ink);
-}
-
-.theme-toggle[aria-pressed='true']::after {
-  background:
-    radial-gradient(circle at 20px 50%, var(--on-sea) 5px, transparent 5.5px),
-    var(--sea);
-}
-
-.content {
-  padding: 28px 36px 48px;
+.main {
   min-width: 0;
 }
 
-/* Narrow screens: the sidebar becomes a bar above the content, so the page
-   keeps the full width. The section links scroll sideways if they don't fit. */
+/* Top bar: the search box on the left, the user menu on the right. */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 36px 0;
+}
+
+.content {
+  padding: 20px 36px 48px;
+  min-width: 0;
+}
+
+/* Narrow screens: the sidebar and the top bar fold into one bar above the
+   content, so the page keeps the full width: the wordmark and the user menu,
+   then the search box, then the section links, which scroll sideways if they
+   don't fit. The two wrappers step aside (display: contents) so their children
+   can share one grid, and the bar's panel is drawn behind its three rows. */
 @media (max-width: 720px) {
   .shell {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas:
+      'wordmark menu'
+      'search search'
+      'nav nav'
+      'content content';
   }
 
-  .sidebar {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 16px;
+  .shell::before {
+    content: '';
+    grid-row: 1 / 4;
+    grid-column: 1 / -1;
+    background: var(--panel);
+  }
+
+  .sidebar,
+  .main,
+  .topbar {
+    display: contents;
   }
 
   .wordmark {
-    padding: 0 10px;
+    grid-area: wordmark;
+    align-self: center;
+    padding: 12px 26px 0;
+  }
+
+  .topbar .user-menu {
+    grid-area: menu;
+    padding: 12px 16px 0;
+  }
+
+  .topbar .search {
+    grid-area: search;
+    width: auto;
+    margin: 10px 16px 0;
+  }
+
+  .topbar .search-input {
+    background: var(--page);
   }
 
   .sidebar nav {
-    order: 3;
-    flex: 1 0 100%;
+    grid-area: nav;
     display: flex;
     overflow-x: auto;
+    padding: 8px 16px 12px;
   }
 
   .nav-link {
     white-space: nowrap;
   }
 
-  .theme-toggle {
-    margin-left: auto;
-    position: static;
-  }
-
   .content {
+    grid-area: content;
     padding: 20px 16px 40px;
   }
 }
