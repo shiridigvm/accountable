@@ -23,9 +23,11 @@ The intent and spec leave these open. A change to any of them goes into this pla
    | `--raspberry` (text, late dates)   | `#ef476f`     | `#f7819e`            | 5.4:1 on lane          |
    | `--cerulean` (focus ring, bars)    | `#118ab2`     | `#4fb3d6`            | 5.5:1 on lane          |
    | Negotiation stage accent           | `#3e6373`     | `#7fa3b2`            | 4.9:1 on lane          |
-   | Marigold, small text               | none today    | `#ffd47a`            | 9.4:1 on lane          |
+   | `--raspberry-fill` (danger button) | `#ef476f`     | `#d6355d`            | 4.6:1 white text on it |
 
-   Tints, the dialog shadow and backdrop, the drag-over column, chart grid lines and the tooltip get dark values in Phase 2. Sea Green, Marigold, Coral and Raspberry fills keep their brand values in both modes. Filled buttons keep their text colors (Midnight on Sea Green, white on Raspberry), because the button fill does not change.
+   No Marigold small-text token is added, because no text uses Marigold yet. Add one, with a dark value that meets 4.5:1, when text first uses it.
+
+   Tints, the dialog shadow and backdrop, the drag-over column, chart grid lines and the tooltip get dark values in Phase 2. Sea Green, Marigold and Coral fills keep their brand values in both modes, and filled buttons keep their text colors (Midnight on Sea Green, white on Raspberry). The Raspberry fill is the exception: white on the brand Raspberry is 3.62:1, so in dark mode the fill darkens to `#d6355d` to meet R36. Light mode keeps the brand Raspberry (decision 6).
 
 6. **R36 applies to dark mode only.** The intent says "Text in dark mode meets WCAG AA" and "Light mode looks exactly as it does today". Some light colors today are below AA: white on Cerulean 3.96:1, white on Raspberry 3.62:1, Raspberry on its tint 3.09:1, muted text on the page 4.46:1. Applying R36 to both modes would mean changing light mode. `docs/spec.md` R36 is corrected to say dark mode, and the light-mode gaps are recorded in `docs/STATUS.md` as known gaps.
 
@@ -35,7 +37,7 @@ The intent and spec leave these open. A change to any of them goes into this pla
 
 | Path                                                                                                          | Phase | Purpose                                                                                                                                                                                                                 |
 | ------------------------------------------------------------------------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `frontend/src/lib/theme.ts`                                                                                   | 3     | Read, apply and save the mode (the storage key, `readSavedTheme`, `applyTheme`, `saveTheme`).                                                                                                                           |
+| `frontend/src/lib/theme.ts`                                                                                   | 3     | Apply and save the mode (the storage key, `appliedTheme`, `applyTheme`, `saveTheme`). Only the inline script reads storage, so there is no read function here.                                                          |
 | `frontend/src/lib/theme.test.ts`                                                                              | 3     | Unit tests for `theme.ts`.                                                                                                                                                                                              |
 | `frontend/src/lib/stages.test.ts`                                                                             | 1     | Stage colors are tokens, and each one is defined in both modes.                                                                                                                                                         |
 | `frontend/src/styles.test.ts`                                                                                 | 1, 2  | Token tests: the light values are unchanged, there are no color literals outside `styles.css`, and dark contrast meets R36. It reads files with Vite's `?raw` import and `import.meta.glob`, so it needs no Node types. |
@@ -112,12 +114,9 @@ Each phase ends with `npm run check:quick` passing. Phases 4 and 5 end with `npm
 
 `frontend/src/lib/theme.test.ts`:
 
-- With nothing saved, the saved mode reads as light.
-- With `dark` saved, it reads as dark. With `light` saved, it reads as light.
-- An unknown saved value reads as light.
-- When localStorage throws on read, it reads as light and does not throw.
 - Applying dark sets `data-theme="dark"` on `<html>`. Applying light removes it.
 - Saving writes the key. When localStorage throws on write, saving does not throw.
+- The read rules (nothing saved, `dark`, `light`, an unknown value, storage that throws) live only in the inline script, so the end-to-end tests cover them: light by default, toggle and reload, back to light, and blocked storage.
 
 `frontend/src/components/Layout.test.tsx` (added to the existing file):
 
@@ -138,7 +137,7 @@ Each phase ends with `npm run check:quick` passing. Phases 4 and 5 end with `npm
 - Every light token that exists today keeps today's value.
 - No `.ts` or `.tsx` file in `frontend/src`, other than tests, contains a hex or `rgb()` color literal. This covers the "colors in one place" constraint.
 - Every token in the light block also has a dark value, except the brand fills that stay the same by decision 5.
-- Dark contrast meets R36. Ink, muted, sea-ink, Raspberry and Marigold text reach 4.5:1 on the page, panels and lanes. Cerulean, the stage accents, chart marks and the focus ring reach 3:1 on the backgrounds they sit on.
+- Dark contrast meets R36. Ink, muted, sea-ink and Raspberry text reach 4.5:1 on the page, panels and lanes, and white reaches 4.5:1 on the dark Raspberry fill. Cerulean, the stage accents, chart marks and the focus ring reach 3:1 on the backgrounds they sit on.
 
 The existing Dashboard, Pipeline, Deals and detail page tests still pass unchanged.
 

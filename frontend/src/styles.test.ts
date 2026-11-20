@@ -17,12 +17,9 @@ const LIGHT_BEFORE_DARK_MODE = {
 };
 
 // Brand fills and the text on them keep their brand colors in both modes.
-const SAME_IN_BOTH_MODES = [
-  '--sea',
-  '--on-sea',
-  '--raspberry-fill',
-  '--on-raspberry',
-];
+// The Raspberry fill is the exception: it is darker in dark mode so white text
+// on it meets R36.
+const SAME_IN_BOTH_MODES = ['--sea', '--on-sea', '--on-raspberry'];
 
 const DARK_BACKGROUNDS = ['--page', '--panel', '--lane'];
 
@@ -34,6 +31,7 @@ const TEXT_PAIRS: [string, string[]][] = [
   ['--sea-ink', [...DARK_BACKGROUNDS, '--row-tint', '--sea-tint']],
   ['--raspberry', [...DARK_BACKGROUNDS, '--row-tint', '--raspberry-tint']],
   ['--on-sea', ['--sea']],
+  ['--on-raspberry', ['--raspberry-fill']],
 ];
 const NON_TEXT_PAIRS: [string, string[]][] = [
   ['--cerulean', [...DARK_BACKGROUNDS, '--lane-over', '--row-tint']],

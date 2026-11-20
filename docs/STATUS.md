@@ -18,7 +18,10 @@ Built to `docs/changes/dark-mode/plan.md`, all phases done.
 - Tests: `styles.test.ts` (light values unchanged, no color literals outside `styles.css`, every token has a dark value, dark contrast meets R36), `lib/stages.test.ts`, `lib/theme.test.ts`, the toggle in `components/Layout.test.tsx`, and `e2e/tests/theme.spec.ts` (default light, toggle and reload, back to light, no flash with React blocked, keyboard and focus ring, every section and a dialog, blocked storage).
 - Screenshots of the dashboard and pipeline in both modes are in `docs/changes/dark-mode/`. Light mode matched the pre-change screenshots byte for byte after the token move; the final light ones differ only by the toggle.
 - Vitest now reads `.css?raw` imports (`frontend/vite.config.ts`), so the token tests can read `styles.css`. Other CSS imports stay empty in tests as before.
-- Differences from the plan: `readSavedTheme` was left out of `lib/theme.ts`, because only the inline script reads storage and the app never called it; the end-to-end tests cover the inline script's rules. No Marigold small-text token was added, because no text uses Marigold yet.
+- Review fixes:
+  - The danger button's fill is darker in dark mode (`--raspberry-fill: #d6355d`), so its white text is 4.64:1 and meets R36. Before, it was 3.62:1. `styles.test.ts` now checks that pair.
+  - `plan.md` now records what was built: no `readSavedTheme`, no Marigold small-text token, and the dark Raspberry fill.
+  - Below 720px wide the sidebar becomes a bar above the content (spec 6.2). Before, it kept its 220px width and the dashboard and pipeline were cut off on a phone.
 
 ## How to run
 
@@ -64,7 +67,8 @@ Other checks: `npm run typecheck`, `npm run lint`, `npm run build`.
 
 - Quality gates: `npm run check` runs formatting, lint (ESLint with TypeScript, React Hooks and jsx-a11y rules; ruff), complexity (max 15 per function), types (tsc and ty), gitleaks, and `npm test` with coverage of at least 80% (backend pytest-cov and frontend Vitest line coverage). `npm run check:quick` skips the browser tests. `npm run format` fixes formatting.
 - Hooks: a lefthook pre-commit hook (`lefthook.yml`) formats staged files, then runs lint, types and gitleaks. It skips tests. The agent's Stop hook runs `npm run check:quick` and blocks once on failure (`.claude/hooks/check-on-stop.mjs`). The agent's PreToolUse hook blocks edits to `.env` files (`.claude/hooks/block-env-edit.mjs`).
-- CI: `.github/workflows/ci.yml` runs on every push. It scans the repo with gitleaks first, then runs `npm run check` on GitHub's Ubuntu runner with Node 26, uv and the preinstalled Google Chrome. On failure it uploads the Playwright HTML report (`e2e/playwright-report`). No secrets are used. The Playwright config now writes that HTML report as well as the list output.
+- Subagents (`.claude/agents/`, both on Sonnet): `reviewer` reviews a branch with `docs/REVIEW.md`. Its Bash is limited to read-only commands by a PreToolUse hook (`.claude/hooks/read-only-bash.mjs`). `ui-check` checks each page in light and dark mode with the Playwright MCP server, against the brand skill and `docs/spec.md`. It has no edit or shell tools and saves screenshots in `.playwright-mcp/`.
+- CI: `.github/workflows/ci.yml` runs on every push. It scans the repo with gitleaks first, then runs `npm run check:quick` on GitHub's Ubuntu runner with Node 26 and uv: formatting, lint, types, gitleaks, backend tests and frontend unit tests. The end-to-end tests do not run in CI; run `npm run check` locally for them. No secrets are used. The Playwright config writes an HTML report (`e2e/playwright-report`) as well as the list output.
 - Timeline errors on the organization, contact and deal pages showed "Something went wrong." instead of the server's message. The message is now shown (`frontend/src/pages/DealDetail.test.tsx`).
 
 ## Known gaps
@@ -74,6 +78,7 @@ Other checks: `npm run typecheck`, `npm run lint`, `npm run build`.
 - Visual comparison with `final.html` is by eye only, not automated.
 - The dashboard chunk is larger than 500 kB because Recharts is bundled in one piece. This is a build warning, not an error.
 - Restart persistence is tested at the API level (a new app instance on the same file). The browser tests do not restart the server.
-- Some light-mode colors are below WCAG AA: white on Cerulean (3.96:1), white on Raspberry (3.62:1), Raspberry on its tint (3.09:1), muted text on the page (4.46:1). Left as they are by the dark-mode change, which keeps light mode unchanged. White on Raspberry is also below AA in dark mode, on the danger button, because the plan keeps filled buttons the same in both modes.
+- Some light-mode colors are below WCAG AA: white on Cerulean (3.96:1), white on Raspberry (3.62:1), Raspberry on its tint (3.09:1), muted text on the page (4.46:1). Left as they are by the dark-mode change, which keeps light mode unchanged.
+- The narrow-screen layout (spec 6.2) is tested at 390px on the dashboard and pipeline only (`e2e/tests/layout.spec.ts`). Other pages and sizes between 390px and 720px are not checked.
 - Links in tables and the dashboard's "Open the pipeline" link use the browser's default link colors (blue in light mode, a light purple in dark mode), not brand tokens. They meet AA in dark mode. Changing them would change light mode.
 - Dark mode has only been checked in Chrome.

@@ -160,6 +160,7 @@ The approved dashboard and pipeline design is `docs/mockups/final.html`.
 ### 6.2 Layout
 
 - Left sidebar with five sections: Dashboard, Organizations, Contacts, Deals, Pipeline. Panel surface for the current mode, active item in Sea Green tint. The light and dark mode toggle (R33) sits at the bottom.
+- Below about 720px wide, the sidebar becomes a bar across the top (wordmark and mode toggle, then the section links, which scroll sideways if they don't fit), so the main area keeps the full width.
 - Main area: page title, then content.
 - Detail pages: a summary panel at the top (key fields and links), then two columns on wide screens, with related records on the left and the timeline on the right. A single column below about 1100px.
 

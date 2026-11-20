@@ -17,7 +17,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  // The HTML report is written to e2e/playwright-report, which CI uploads when a run fails.
+  // The HTML report is written to e2e/playwright-report, for looking into a failed local run.
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: "http://127.0.0.1:5173",

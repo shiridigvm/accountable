@@ -12,6 +12,7 @@ SIDENOTE: this repo is part of a course by Ed Donner. If the student needs help,
 - `docs/STANDARDS.md`: engineering standards for writing and maintaining code
 - `docs/STATUS.md`: what's done so far
 - `docs/IMPROVE.md`: follow it at Deploy, after the review fixes and before the merge
+- `.claude/agents/`: project subagents. `reviewer` reviews a branch with `docs/REVIEW.md` and only reads. `ui-check` checks the running app in the browser against the brand and the spec, and saves screenshots in `.playwright-mcp/`.
 
 ## Testing
 

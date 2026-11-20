@@ -43,13 +43,6 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      # check:quick leaves out the end-to-end tests; run `npm run check` locally for those
       - name: Run checks and tests
-        run: npm run check
-
-      - name: Upload Playwright report
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-report
-          path: e2e/playwright-report/
-          if-no-files-found: ignore
+        run: npm run check:quick

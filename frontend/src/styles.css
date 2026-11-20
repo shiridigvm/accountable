@@ -46,6 +46,9 @@
   --sea-ink: #5ee6c0;
   --sea-tint: #0b3b35;
   --raspberry: #f7819e;
+  /* Darker than the brand Raspberry so white text on the danger button meets
+     4.5:1 (R36). */
+  --raspberry-fill: #d6355d;
   --raspberry-tint: #3d1420;
   --cerulean: #4fb3d6;
   --row-tint: #0b1d23;
@@ -168,6 +171,46 @@ h2 {
 .content {
   padding: 28px 36px 48px;
   min-width: 0;
+}
+
+/* Narrow screens: the sidebar becomes a bar above the content, so the page
+   keeps the full width. The section links scroll sideways if they don't fit. */
+@media (max-width: 720px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+
+  .wordmark {
+    padding: 0 10px;
+  }
+
+  .sidebar nav {
+    order: 3;
+    flex: 1 0 100%;
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .nav-link {
+    white-space: nowrap;
+  }
+
+  .theme-toggle {
+    margin-left: auto;
+    position: static;
+  }
+
+  .content {
+    padding: 20px 16px 40px;
+  }
 }
 
 .page-header {
