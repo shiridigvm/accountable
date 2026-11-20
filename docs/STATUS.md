@@ -8,12 +8,17 @@ Design and spec:
 - `docs/spec.md`: the product as built today: requirements, data model, API, screens.
 - `docs/mockups/final.html`: the approved dashboard and pipeline design. The built app follows it.
 
-## In progress: dark mode (branch `dark-mode`)
+## Dark mode (branch `dark-mode`)
 
-- `docs/changes/dark-mode/intent.md`: agreed.
-- `docs/spec.md` already describes the product with dark mode, as it will be once this branch is merged: new section 3.9 (R32 to R36), mode-aware colors, surfaces and tokens in 6.1, the toggle in 6.2, the new tests in section 9, and design decisions 10 and 11. The app does not have dark mode yet.
-- `docs/changes/dark-mode/plan.md`: written, awaiting review. It settles the open points from the spec step: dark token values with measured contrast, the toggle (a "Dark mode" button with `aria-pressed`), localStorage fallback to light, and the move of hardcoded colors into tokens. R36 in `docs/spec.md` is now scoped to dark mode, matching the intent, because some light-mode colors are below AA today and light mode must not change.
-- No code written yet.
+Built to `docs/changes/dark-mode/plan.md`, all phases done. Not committed yet.
+
+- Every color is a token in `frontend/src/styles.css`, light under `:root` and dark under `:root[data-theme='dark']`. Stage colors (`lib/stages.ts`) and chart colors (`pages/Dashboard.tsx`) use the tokens. Recharts' own white tooltip, dot fill and grey cursor are overridden with tokens too.
+- `--cerulean` is now defined, so focus rings are Cerulean as the CSS intended. Before, they fell back to the text color.
+- The "Dark mode" toggle (`aria-pressed`) sits at the foot of the sidebar, in `components/Layout.tsx`. `lib/theme.ts` applies and saves the mode. An inline script in `frontend/index.html` applies a saved dark mode before the first paint.
+- Tests: `styles.test.ts` (light values unchanged, no color literals outside `styles.css`, every token has a dark value, dark contrast meets R36), `lib/stages.test.ts`, `lib/theme.test.ts`, the toggle in `components/Layout.test.tsx`, and `e2e/tests/theme.spec.ts` (default light, toggle and reload, back to light, no flash with React blocked, keyboard and focus ring, every section and a dialog, blocked storage).
+- Screenshots of the dashboard and pipeline in both modes are in `docs/changes/dark-mode/`. Light mode matched the pre-change screenshots byte for byte after the token move; the final light ones differ only by the toggle.
+- Vitest now reads `.css?raw` imports (`frontend/vite.config.ts`), so the token tests can read `styles.css`. Other CSS imports stay empty in tests as before.
+- Differences from the plan: `readSavedTheme` was left out of `lib/theme.ts`, because only the inline script reads storage and the app never called it; the end-to-end tests cover the inline script's rules. No Marigold small-text token was added, because no text uses Marigold yet.
 
 ## How to run
 
@@ -69,6 +74,7 @@ Other checks: `npm run typecheck`, `npm run lint`, `npm run build`.
 - Visual comparison with `final.html` is by eye only, not automated.
 - The dashboard chunk is larger than 500 kB because Recharts is bundled in one piece. This is a build warning, not an error.
 - Restart persistence is tested at the API level (a new app instance on the same file). The browser tests do not restart the server.
-- Some light-mode colors are below WCAG AA: white on Cerulean (3.96:1), white on Raspberry (3.62:1), Raspberry on its tint (3.09:1), muted text on the page (4.46:1). Left as they are by the dark-mode change, which keeps light mode unchanged.
-- `--cerulean` is used for focus rings in `frontend/src/styles.css` but never defined, so focus rings fall back to the text color. The dark-mode plan fixes this in Phase 1.
+- Some light-mode colors are below WCAG AA: white on Cerulean (3.96:1), white on Raspberry (3.62:1), Raspberry on its tint (3.09:1), muted text on the page (4.46:1). Left as they are by the dark-mode change, which keeps light mode unchanged. White on Raspberry is also below AA in dark mode, on the danger button, because the plan keeps filled buttons the same in both modes.
+- Links in tables and the dashboard's "Open the pipeline" link use the browser's default link colors (blue in light mode, a light purple in dark mode), not brand tokens. They meet AA in dark mode. Changing them would change light mode.
+- Dark mode has only been checked in Chrome.
 - Nothing is committed yet. The user does the commits.

@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { appliedTheme, applyTheme, saveTheme, type Theme } from '../lib/theme';
 
 const SECTIONS = [
   { to: '/dashboard', label: 'Dashboard' },
@@ -9,6 +11,16 @@ const SECTIONS = [
 ];
 
 export function Layout() {
+  // index.html has already applied the saved mode, so start from <html>.
+  const [theme, setTheme] = useState<Theme>(appliedTheme);
+
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    saveTheme(next);
+    setTheme(next);
+  }
+
   return (
     <div className="shell">
       <aside className="sidebar">
@@ -22,6 +34,14 @@ export function Layout() {
             </NavLink>
           ))}
         </nav>
+        <button
+          type="button"
+          className="theme-toggle"
+          aria-pressed={theme === 'dark'}
+          onClick={toggleTheme}
+        >
+          Dark mode
+        </button>
       </aside>
       <main className="content">
         <Outlet />

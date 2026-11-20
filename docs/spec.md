@@ -211,7 +211,7 @@ Per `docs/TECH_STACK.md`.
 `npm test` runs three suites and fails if any test fails:
 
 - Backend unit and API tests (pytest), covering the rules in section 3 and the API in section 5. Restart persistence is tested by opening a new app instance on the same file.
-- Frontend unit tests (Vitest), covering formatting, board layout, dashboard data, tables, dialogs, the forms and the mode toggle.
+- Frontend unit tests (Vitest), covering formatting, board layout, dashboard data, tables, dialogs, the forms, the mode toggle, and the color tokens (light values unchanged, no colors outside `styles.css`, dark-mode contrast for R36).
 - End-to-end tests (Playwright Test, with the installed Google Chrome) in `e2e/tests/`. They start the app on their own servers and database, covering tables, the contacts filter, delete refusals, detail pages, the pipeline, the dashboard, and switching to dark mode and keeping it after a reload.
 
 Not covered by automated tests: visual comparison with the mockup, how dark mode looks, Safari, Firefox and Edge, and browser restart.

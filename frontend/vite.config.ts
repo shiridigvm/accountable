@@ -12,6 +12,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // Vitest empties CSS imports by default. The token tests read styles.css
+    // as text, so let raw CSS imports through and keep the rest empty.
+    css: { include: [/\.css\?raw$/] },
     include: ['src/**/*.test.{ts,tsx}'],
     coverage: {
       provider: 'v8',

@@ -8,6 +8,18 @@
       href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%224%22 fill=%22%2306D6A0%22/%3E%3C/svg%3E"
     />
     <title>Accountable</title>
+    <script>
+      // Applies the saved dark mode before the first paint (R35). The app's own
+      // module loads too late for that. Same key as src/lib/theme.ts. Anything
+      // other than a saved 'dark', or blocked storage, means light.
+      try {
+        if (localStorage.getItem('accountable-theme') === 'dark') {
+          document.documentElement.dataset.theme = 'dark';
+        }
+      } catch {
+        // Storage is blocked. Stay in light mode.
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

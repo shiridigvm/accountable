@@ -1,4 +1,5 @@
 // The six fixed stages (R7) with their column colors from the brand skill.
+// The colors are CSS tokens from styles.css, so they follow the light or dark mode.
 
 export const STAGES = [
   'New',
@@ -18,12 +19,12 @@ export const OPEN_STAGES: readonly Stage[] = [
 ];
 
 export const STAGE_COLORS: Record<Stage, string> = {
-  New: '#118ab2',
-  Qualified: '#ffc145',
-  Proposal: '#f78c6b',
-  Negotiation: '#3e6373',
-  Won: '#06d6a0',
-  Lost: '#ef476f',
+  New: 'var(--stage-new)',
+  Qualified: 'var(--stage-qualified)',
+  Proposal: 'var(--stage-proposal)',
+  Negotiation: 'var(--stage-negotiation)',
+  Won: 'var(--stage-won)',
+  Lost: 'var(--stage-lost)',
 };
 
 export const CONTACT_STATUSES = ['lead', 'qualified', 'customer'] as const;

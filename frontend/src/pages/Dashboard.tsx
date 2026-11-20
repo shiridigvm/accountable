@@ -25,6 +25,16 @@ import {
 import { formatDate, formatLongDate, formatMoney } from '../lib/format';
 import { STAGE_COLORS, OPEN_STAGES } from '../lib/stages';
 
+// Recharts draws its tooltip as a white box with fixed colors. These styles use
+// the mode tokens instead, so the tooltip follows light and dark mode.
+const TOOLTIP_STYLES = {
+  contentStyle: {
+    backgroundColor: 'var(--panel)',
+    border: '1px solid var(--chart-tooltip-border)',
+  },
+  labelStyle: { color: 'var(--ink)' },
+};
+
 export default function Dashboard() {
   const dashboard = useResource<DashboardData>('/api/dashboard');
   const board = useResource<Board>('/api/pipeline');
@@ -115,36 +125,41 @@ export default function Dashboard() {
                 data={revenue}
                 margin={{ top: 22, right: 16, bottom: 0, left: 0 }}
               >
-                <CartesianGrid vertical={false} stroke="#eef3f4" />
+                <CartesianGrid vertical={false} stroke="var(--rule)" />
                 <XAxis
                   dataKey="label"
-                  tick={{ fontSize: 11, fill: '#5b7480' }}
+                  tick={{ fontSize: 11, fill: 'var(--muted)' }}
                   interval={2}
                 />
                 <YAxis
                   tickFormatter={(v: number) => `$${Math.round(v / 1000)}k`}
-                  tick={{ fontSize: 11, fill: '#5b7480' }}
+                  tick={{ fontSize: 11, fill: 'var(--muted)' }}
                   width={56}
                 />
-                <Tooltip formatter={(v) => formatMoney(Number(v) * 100)} />
+                <Tooltip
+                  {...TOOLTIP_STYLES}
+                  cursor={{ stroke: 'var(--chart-cursor)' }}
+                  formatter={(v) => formatMoney(Number(v) * 100)}
+                />
                 <ReferenceLine
                   x={monthLabel(todayMonthOf(data.today))}
-                  stroke="#c9d6da"
+                  stroke="var(--chart-reference)"
                   strokeDasharray="3 3"
                   label={{
                     value: 'today',
                     position: 'top',
                     fontSize: 11,
-                    fill: '#5b7480',
+                    fill: 'var(--muted)',
                   }}
                 />
                 <Line
                   type="linear"
                   dataKey="won"
                   name="Won"
-                  stroke="#06d6a0"
+                  stroke="var(--sea)"
                   strokeWidth={2.5}
-                  dot={{ r: 3 }}
+                  dot={{ r: 3, fill: 'var(--panel)' }}
+                  activeDot={{ stroke: 'var(--panel)' }}
                   isAnimationActive={false}
                 />
               </LineChart>
@@ -161,22 +176,25 @@ export default function Dashboard() {
                 data={counts}
                 margin={{ top: 10, right: 8, bottom: 0, left: 0 }}
               >
-                <CartesianGrid vertical={false} stroke="#eef3f4" />
+                <CartesianGrid vertical={false} stroke="var(--rule)" />
                 <XAxis
                   dataKey="label"
-                  tick={{ fontSize: 11, fill: '#5b7480' }}
+                  tick={{ fontSize: 11, fill: 'var(--muted)' }}
                   interval={2}
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fontSize: 11, fill: '#5b7480' }}
+                  tick={{ fontSize: 11, fill: 'var(--muted)' }}
                   width={28}
                 />
-                <Tooltip />
+                <Tooltip
+                  {...TOOLTIP_STYLES}
+                  cursor={{ fill: 'var(--chart-cursor)' }}
+                />
                 <Bar
                   dataKey="count"
                   name="Deals"
-                  fill="#118ab2"
+                  fill="var(--cerulean)"
                   radius={[3, 3, 0, 0]}
                   isAnimationActive={false}
                 />
