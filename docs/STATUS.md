@@ -5,7 +5,7 @@ The MVP is built to the plan in `docs/changes/mvp/plan.md`. Each phase has its t
 Design and spec:
 
 - `docs/changes/mvp/intent.md`: what the MVP was for. Settled.
-- `docs/spec.md`: the product as built today: requirements, data model, API, screens.
+- `docs/spec.md`: a summary of the product as built today, with an index of the area files in `docs/specs/`, which hold the requirements, data model, API and screens, one file per product area.
 - `docs/mockups/final.html`: the approved dashboard and pipeline design. The built app follows it.
 
 ## Dark mode (branch `dark-mode`)

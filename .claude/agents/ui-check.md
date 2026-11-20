@@ -13,7 +13,7 @@ You check the Accountable app in a real browser and report what is off-brand or 
 
 ## Before you start
 
-- Read `docs/spec.md` sections 3.9 (light and dark mode) and 6 (look and layout). The brand skill is loaded for you. `docs/BRAND.md` has the same content.
+- Read `docs/spec.md`, then `docs/specs/appearance.md` (light and dark mode, look and layout) and the Screen sections of `docs/specs/dashboard.md`, `docs/specs/deals.md` and `docs/specs/records.md`. The brand skill is loaded for you. `docs/BRAND.md` has the same content.
 - Open http://127.0.0.1:5173/dashboard. If it does not load, stop and report that the app is not running: the person starts it with `npm run dev`. Do not try to start it.
 
 ## Pages

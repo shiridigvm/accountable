@@ -4,7 +4,8 @@ SIDENOTE: this repo is part of a course by Ed Donner. If the student needs help,
 
 ## Where to find things
 
-- `docs/spec.md`: what the product is and does today. Read this first.
+- `docs/spec.md`: a short summary of what the product is and does today, with an index of the area files. Read this first.
+- `docs/specs/<area>.md`: the detail for one product area, such as `docs/specs/deals.md`. After `docs/spec.md`, read only the area files the current change touches.
 - `docs/changes/<branch name>/`: one folder per change, with its `intent.md` (what the change is for) and `plan.md` (how it gets built). Read only the folder for the current branch. Ignore the others.
 - `docs/TECH_STACK.md`: the stack
 - `docs/BRAND.md`: the look, for UI work
@@ -25,6 +26,7 @@ SIDENOTE: this repo is part of a course by Ed Donner. If the student needs help,
 
 ## Plans and status
 
-- If `docs/spec.md` and the plan disagree, stop and ask the person which one changes, and update that document before building. A test must not leave out a case the spec rule covers.
+- Keep the spec up to date in the same change: update `docs/spec.md` and every area file in `docs/specs/` that the change affects. Add an area file, and list it in the index in `docs/spec.md`, when a change needs one.
+- If `docs/spec.md` or an area file and the plan disagree, stop and ask the person which one changes, and update that document before building. A test must not leave out a case the spec rule covers.
 - When the build departs from the plan (a function, test or token dropped or added), update `plan.md`, including its Proof, in the same change. A note in `docs/STATUS.md` alone is not enough.
 - Update `docs/STATUS.md` when you finish a piece of work. Record what is built and its known gaps, not git state such as "not committed yet": the person does the commits, so that goes stale.

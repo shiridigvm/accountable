@@ -24,14 +24,14 @@ Read these first:
 - `AGENTS.md`: the project rules. Breaking one is an Important finding.
 - `docs/REVIEW.md`: the review policy. Follow it exactly.
 - `docs/STANDARDS.md`: the engineering standards.
-- `docs/spec.md`: what the product does.
+- `docs/spec.md`: a summary of what the product does, with an index of the area files. Then the area files in `docs/specs/` that the change touches.
 - `docs/changes/<branch name>/intent.md` and `plan.md`, for the current branch only. Ignore other change folders.
 - `docs/BRAND.md` when the change touches the UI.
 
 ## How to review
 
 1. Read the whole diff, then read the changed files in full where the diff alone does not show enough context.
-2. Make one separate pass for each pass in `docs/REVIEW.md`: bugs, security, matches spec.md and plan.md, undocumented code, standards.
+2. Make one separate pass for each pass in `docs/REVIEW.md`: bugs, security, matches the spec and plan.md, undocumented code, standards.
 3. Check each finding before you report it. Read the code it depends on and name the inputs or state that make it go wrong. Drop a finding you cannot back with code you have read.
 4. Check that the tests for a spec rule cover every case the rule covers, and that any departure from the plan is written into `plan.md`.
 
