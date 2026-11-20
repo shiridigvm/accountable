@@ -22,4 +22,8 @@ SIDENOTE: this repo is part of a course by Ed Donner. If the student needs help,
 - Run `npm test` before you call a piece of work done, and fix failures. Do not weaken, skip or delete a test to make it pass.
 - The end-to-end tests start their own servers on ports 8000 and 5173 with a separate test database. Stop any `npm run dev` before you run `npm test`, or the tests cannot start their servers.
 
-Update `docs/STATUS.md` when you finish a piece of work
+## Plans and status
+
+- If `docs/spec.md` and the plan disagree, stop and ask the person which one changes, and update that document before building. A test must not leave out a case the spec rule covers.
+- When the build departs from the plan (a function, test or token dropped or added), update `plan.md`, including its Proof, in the same change. A note in `docs/STATUS.md` alone is not enough.
+- Update `docs/STATUS.md` when you finish a piece of work. Record what is built and its known gaps, not git state such as "not committed yet": the person does the commits, so that goes stale.

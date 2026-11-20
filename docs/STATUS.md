@@ -10,7 +10,7 @@ Design and spec:
 
 ## Dark mode (branch `dark-mode`)
 
-Built to `docs/changes/dark-mode/plan.md`, all phases done. Not committed yet.
+Built to `docs/changes/dark-mode/plan.md`, all phases done.
 
 - Every color is a token in `frontend/src/styles.css`, light under `:root` and dark under `:root[data-theme='dark']`. Stage colors (`lib/stages.ts`) and chart colors (`pages/Dashboard.tsx`) use the tokens. Recharts' own white tooltip, dot fill and grey cursor are overridden with tokens too.
 - `--cerulean` is now defined, so focus rings are Cerulean as the CSS intended. Before, they fell back to the text color.
@@ -77,4 +77,3 @@ Other checks: `npm run typecheck`, `npm run lint`, `npm run build`.
 - Some light-mode colors are below WCAG AA: white on Cerulean (3.96:1), white on Raspberry (3.62:1), Raspberry on its tint (3.09:1), muted text on the page (4.46:1). Left as they are by the dark-mode change, which keeps light mode unchanged. White on Raspberry is also below AA in dark mode, on the danger button, because the plan keeps filled buttons the same in both modes.
 - Links in tables and the dashboard's "Open the pipeline" link use the browser's default link colors (blue in light mode, a light purple in dark mode), not brand tokens. They meet AA in dark mode. Changing them would change light mode.
 - Dark mode has only been checked in Chrome.
-- Nothing is committed yet. The user does the commits.
