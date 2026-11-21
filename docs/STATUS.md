@@ -20,6 +20,7 @@ Built to `docs/changes/multi-user/plan.md`, phases 1 to 4. Departures are writte
 - User menu under the initials (`components/UserMenu.tsx`): email, Light, Dark or System, and Sign out. System is the default and follows the device. The sidebar toggle is gone.
 - Running: `scripts/run.mjs` reads `.env` with Node's own parser. `npm run dev` leaves `DATABASE_URL` out. `npm start` builds the frontend and serves it from FastAPI at http://127.0.0.1:8000 against Supabase. `render.yaml` describes the Render service.
 - New dependencies: `psycopg[binary]`, `alembic`, `@supabase/supabase-js` (cases in the plan, choice 1).
+- ui-check fixes: the "Added by" block on detail pages has space above it and, on the deal page, lines up with the facts grid (`.facts.added-by`). "Added by" in timeline entries is small, without the browser's default margins (`.timeline-by`).
 
 ## Dark mode (branch `dark-mode`)
 
@@ -27,7 +28,7 @@ Built to `docs/changes/dark-mode/plan.md`, all phases done.
 
 - Every color is a token in `frontend/src/styles.css`, light under `:root` and dark under `:root[data-theme='dark']`. Stage colors (`lib/stages.ts`) and chart colors (`pages/Dashboard.tsx`) use the tokens. Recharts' own white tooltip, dot fill and grey cursor are overridden with tokens too.
 - `--cerulean` is now defined, so focus rings are Cerulean as the CSS intended. Before, they fell back to the text color.
-- The "Dark mode" toggle (`aria-pressed`) sits at the foot of the sidebar, in `components/Layout.tsx`. `lib/theme.ts` applies and saves the mode. An inline script in `frontend/index.html` applies a saved dark mode before the first paint.
+- The "Dark mode" toggle at the foot of the sidebar has since been replaced by the user menu's theme choice (`multi-user`). `lib/theme.ts` applies and saves the mode. An inline script in `frontend/index.html` applies a saved dark mode before the first paint.
 - Tests: `styles.test.ts` (light values unchanged, no color literals outside `styles.css`, every token has a dark value, dark contrast meets R36), `lib/stages.test.ts`, `lib/theme.test.ts`, the toggle in `components/Layout.test.tsx`, and `e2e/tests/theme.spec.ts` (default light, toggle and reload, back to light, no flash with React blocked, keyboard and focus ring, every section and a dialog, blocked storage).
 - Screenshots of the dashboard and pipeline in both modes are in `docs/changes/dark-mode/`. Light mode matched the pre-change screenshots byte for byte after the token move; the final light ones differ only by the toggle.
 - Vitest now reads `.css?raw` imports (`frontend/vite.config.ts`), so the token tests can read `styles.css`. Other CSS imports stay empty in tests as before.
@@ -88,7 +89,7 @@ Other checks: `npm run typecheck`, `npm run lint`, `npm run build`.
 
 - Quality gates: `npm run check` runs formatting, lint (ESLint with TypeScript, React Hooks and jsx-a11y rules; ruff), complexity (max 15 per function), types (tsc and ty), gitleaks, and `npm test` with coverage of at least 80% (backend pytest-cov and frontend Vitest line coverage). `npm run check:quick` skips the browser tests. `npm run format` fixes formatting.
 - Hooks: a lefthook pre-commit hook (`lefthook.yml`) formats staged files, then runs lint, types and gitleaks. It skips tests. The agent's Stop hook runs `npm run check:quick` and blocks once on failure (`.claude/hooks/check-on-stop.mjs`). The agent's PreToolUse hook blocks edits to `.env` files (`.claude/hooks/block-env-edit.mjs`).
-- Subagents (`.claude/agents/`, both on Sonnet): `reviewer` reviews a branch with `docs/REVIEW.md`. Its Bash is limited to read-only commands by a PreToolUse hook (`.claude/hooks/read-only-bash.mjs`). `ui-check` checks each page in light and dark mode with the Playwright MCP server, against the brand skill and `docs/spec.md`. It has no edit or shell tools and saves screenshots in `.playwright-mcp/`.
+- Subagents (`.claude/agents/`, both on Opus): `reviewer` reviews a branch with `docs/REVIEW.md`. Its Bash is limited to read-only commands by a PreToolUse hook (`.claude/hooks/read-only-bash.mjs`). `ui-check` checks each page in light and dark mode with the Playwright MCP server, against the brand skill and `docs/spec.md`. It has no edit or shell tools and saves screenshots in `.playwright-mcp/`.
 - CI: `.github/workflows/ci.yml` runs on every push. It scans the repo with gitleaks first, then runs `npm run check:quick` on GitHub's Ubuntu runner with Node 26 and uv: formatting, lint, types, gitleaks, backend tests and frontend unit tests. The end-to-end tests do not run in CI; run `npm run check` locally for them. No secrets are used. The Playwright config writes an HTML report (`e2e/playwright-report`) as well as the list output.
 - Timeline errors on the organization, contact and deal pages showed "Something went wrong." instead of the server's message. The message is now shown (`frontend/src/pages/DealDetail.test.tsx`).
 
@@ -101,6 +102,12 @@ Other checks: `npm run typecheck`, `npm run lint`, `npm run build`.
   - Stage changes don't record who made them (R46).
   - The "Unknown" default stays on the who columns (plan, choice 7), so the tests, not the database, catch a write that forgets them.
   - Test sign-in tokens live in the backend's memory, so restarting the backend (or the dev reloader after a backend edit) signs test users out.
+  - In dark mode the search results and the user menu are black over black panels, with no visible edge (ui-check). Waiting on a brand decision: a raised surface token, or leave it as the brand says.
+
+- Found by ui-check on `multi-user`, already on `main`:
+  - The organization detail page shows " contacts · deals" with no numbers. `store.get_organization` does not return `contact_count` and `deal_count`, and `OrganizationDetail.test.tsx` mocks them, so the test passes.
+  - Money, numbers and dates in the tables and on detail pages are in Instrument Sans, not JetBrains Mono (appearance spec). Only late dates use mono.
+  - The deal page's "Log activity" heading sits next to a "Log activity" button. The revenue chart's y-axis starts at "$0k".
 
 - Only Chrome is tested automatically. Safari, Firefox and Edge have not been checked.
 - The app has not been checked by eye in a real browser session yet. That is the user's check (criterion 8).

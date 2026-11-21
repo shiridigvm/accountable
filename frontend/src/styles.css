@@ -579,6 +579,14 @@ textarea:focus-visible {
   font-weight: 600;
 }
 
+/* Who added and last changed a record (R46). auto-fill keeps the empty tracks,
+   so on the deal page its two items line up with the facts grid above instead
+   of stretching to half the width each. */
+.facts.added-by {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  margin-top: 14px;
+}
+
 .tag.soon {
   background: var(--sea-tint);
   color: var(--sea-ink);
@@ -625,6 +633,11 @@ textarea:focus-visible {
 
 .timeline-text {
   margin: 6px 0 0;
+}
+
+.timeline-by {
+  margin: 4px 0 0;
+  font-size: 12px;
 }
 
 .timeline .row-actions {

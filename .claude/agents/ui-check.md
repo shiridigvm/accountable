@@ -15,7 +15,7 @@ You check the Accountable app in a real browser and report what is off-brand or 
 
 - Read `docs/spec.md`, then `docs/specs/appearance.md` (theme, look and layout), the Screens sections of `docs/specs/accounts.md` (sign-in screen and user menu) and `docs/specs/search.md`, and the Screen sections of `docs/specs/dashboard.md`, `docs/specs/deals.md` and `docs/specs/records.md`. The brand skill is loaded for you. `docs/BRAND.md` has the same content.
 - Open http://127.0.0.1:5173/dashboard. If it does not load, stop and report that the app is not running: the person starts it with `npm run dev`. Do not try to start it.
-- The sign-in screen appears. Take its screenshot (`sign-in-light.png`) first. Then sign in with the "Test sign-in" panel, email `ui-check@example.com`. Never type a password into the Email and Password form. If there is no "Test sign-in" panel, stop and report it: `npm run dev` turns test sign-in on.
+- The sign-in screen appears. Take its screenshot (`.playwright-mcp/sign-in-light.png`) first. Then sign in with the "Test sign-in" panel, email `ui-check@example.com`. Never type a password into the Email and Password form. If there is no "Test sign-in" panel, stop and report it: `npm run dev` turns test sign-in on.
 
 ## Pages
 
@@ -34,7 +34,7 @@ Pick System in the user menu when you finish, so the browser is left as you foun
 
 ## On each page
 
-1. Wait for the content to load, then take a full-page screenshot. Name it `<page>-<mode>.png`, for example `pipeline-dark.png`, so it is saved in `.playwright-mcp/`, which git ignores. Do not save screenshots anywhere else.
+1. Wait for the content to load, then take a full-page screenshot. Pass the filename with the folder, `.playwright-mcp/<page>-<mode>.png`, for example `.playwright-mcp/pipeline-dark.png`. The Playwright server saves a bare filename in the repo root, where git would pick it up. `.playwright-mcp/` is git-ignored. Do not save screenshots anywhere else.
 2. Read the console messages. Any error is a finding.
 3. Look at the screenshot and the page snapshot, and check against the brand and the spec:
    - Colors: brand palette only, page and panel surfaces right for the mode, ink readable, no white boxes in dark mode.

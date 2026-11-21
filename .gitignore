@@ -24,6 +24,8 @@ playwright-report/
 playwright/.cache/
 blob-report/
 .playwright-mcp/
+# Screenshots that a Playwright MCP call saved in the repo root by mistake
+/*.png
 
 # Python (backend, uv)
 .venv/
