@@ -1,7 +1,7 @@
 # Accountable on Render's free plan (R57): one web service that serves the built
 # frontend and the API. Migrations run when the app starts.
 #
-# The three settings are entered in Render's dashboard when the Blueprint is set
+# The three (3) settings are entered in Render's dashboard when the Blueprint is set
 # up (sync: false), never written here. There is no `branch:` line, so the
 # service deploys the branch chosen in Render.
 services:
