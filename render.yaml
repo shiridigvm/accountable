@@ -1,7 +1,7 @@
 # Accountable on Render's free plan (R57): one web service that serves the built
 # frontend and the API. Migrations run when the app starts.
 #
-# The three (3) settings are entered in Render's dashboard when the Blueprint is set
+# The five (5) settings are entered in Render's dashboard when the Blueprint is set
 # up (sync: false), never written here. There is no `branch:` line, so the
 # service deploys the branch chosen in Render.
 services:
@@ -28,4 +28,9 @@ services:
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      # The Copilot (R72). OPENROUTER_MODEL may be left empty for openrouter/free.
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
         sync: false

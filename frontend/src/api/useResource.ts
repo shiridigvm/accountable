@@ -3,6 +3,14 @@ import { api, errorMessage } from './client';
 
 type State<T> = { data: T | undefined; error: string | null; loading: boolean };
 
+// Every mounted hook's reload, so a change made outside the page (a Copilot
+// Confirm) can make the page on screen load its data again.
+const reloaders = new Set<() => void>();
+
+export function notifyDataChanged(): void {
+  reloaders.forEach((reload) => reload());
+}
+
 // Loads one GET request. `reload` fetches again after a change.
 export function useResource<T>(path: string) {
   const [state, setState] = useState<State<T>>({
@@ -32,5 +40,13 @@ export function useResource<T>(path: string) {
   }, [path, version]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
+
+  useEffect(() => {
+    reloaders.add(reload);
+    return () => {
+      reloaders.delete(reload);
+    };
+  }, [reload]);
+
   return { ...state, reload };
 }

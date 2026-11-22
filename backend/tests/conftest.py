@@ -5,9 +5,11 @@ so each test starts empty and states its own data. Tests that need the sample
 data call the reset endpoint.
 
 `client` is signed in as USER through test sign-in. `anon_client` sends no token.
-The Supabase settings and DATABASE_URL are removed, so no test reaches Supabase
-or Postgres, whatever the shell or .env holds.
+The Supabase settings, the OpenRouter settings and DATABASE_URL are removed, so
+no test reaches Supabase, OpenRouter or Postgres, whatever the shell or .env holds.
 """
+
+import copy
 
 import pytest
 from accountable import auth
@@ -21,7 +23,14 @@ USER = "tester@example.com"
 
 @pytest.fixture(autouse=True)
 def isolated_env(monkeypatch):
-    for name in ("DATABASE_URL", "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"):
+    for name in (
+        "DATABASE_URL",
+        "SUPABASE_URL",
+        "SUPABASE_PUBLISHABLE_KEY",
+        "OPENROUTER_API_KEY",
+        "OPENROUTER_MODEL",
+        "OPENROUTER_BASE_URL",
+    ):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setenv("ACCOUNTABLE_TEST_SIGN_IN", "1")
     auth.clear()
@@ -61,3 +70,30 @@ def anon_client(client):
     from accountable.main import app
 
     return TestClient(app)
+
+
+class FakeModel:
+    """Stands in for OpenRouter. Each call takes the next scripted reply, which is a
+    completion body or an exception to raise, and keeps a copy of the request body."""
+
+    def __init__(self):
+        self.replies: list = []
+        self.requests: list[dict] = []
+
+    def __call__(self, body: dict) -> dict:
+        self.requests.append(copy.deepcopy(body))
+        reply = self.replies.pop(0)
+        if isinstance(reply, Exception):
+            raise reply
+        return reply
+
+
+@pytest.fixture
+def fake_model(monkeypatch):
+    """Replaces copilot.fetch_completion, and sets a key so the Copilot is set up."""
+    from accountable import copilot
+
+    model = FakeModel()
+    monkeypatch.setattr(copilot, "fetch_completion", model)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-test-key")
+    return model

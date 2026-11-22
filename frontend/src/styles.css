@@ -131,7 +131,8 @@ h2 {
   min-width: 0;
 }
 
-/* Top bar: the search box on the left, the user menu on the right. */
+/* Top bar: the search box on the left, the Copilot button and the user menu on
+   the right. */
 .topbar {
   display: flex;
   align-items: center;
@@ -143,22 +144,37 @@ h2 {
 .content {
   padding: 20px 36px 48px;
   min-width: 0;
+  container-type: inline-size;
+}
+
+/* With the Copilot panel open, the main area becomes two columns below the top
+   bar: the page, which narrows, and the panel (copilot.md, Screen). */
+.main.with-copilot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  align-items: start;
+  align-content: start;
+}
+
+.main.with-copilot .topbar {
+  grid-column: 1 / -1;
 }
 
 /* Narrow screens: the sidebar and the top bar fold into one bar above the
-   content, so the page keeps the full width: the wordmark and the user menu,
-   then the search box, then the section links, which scroll sideways if they
-   don't fit. The two wrappers step aside (display: contents) so their children
-   can share one grid, and the bar's panel is drawn behind its three rows. */
+   content, so the page keeps the full width: the wordmark, the Copilot button
+   and the user menu, then the search box, then the section links, which scroll
+   sideways if they don't fit. The two wrappers step aside (display: contents)
+   so their children can share one grid, and the bar's panel is drawn behind
+   its three rows. */
 @media (max-width: 720px) {
   .shell {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     grid-template-rows: auto auto auto 1fr;
     grid-template-areas:
-      'wordmark menu'
-      'search search'
-      'nav nav'
-      'content content';
+      'wordmark copilot menu'
+      'search search search'
+      'nav nav nav'
+      'content content content';
   }
 
   .shell::before {
@@ -170,6 +186,7 @@ h2 {
 
   .sidebar,
   .main,
+  .main.with-copilot,
   .topbar {
     display: contents;
   }
@@ -644,7 +661,9 @@ textarea:focus-visible {
   margin-top: 6px;
 }
 
-@media (max-width: 1100px) {
+/* 808px is the page area of a 1100px window (minus the sidebar and padding).
+   A container query, so the page also folds when the Copilot panel narrows it. */
+@container (max-width: 808px) {
   .detail-grid {
     grid-template-columns: 1fr;
   }
@@ -890,7 +909,7 @@ textarea:focus-visible {
   color: var(--sea-ink);
 }
 
-@media (max-width: 1100px) {
+@container (max-width: 808px) {
   .kpis,
   .chart-row,
   .two-row {

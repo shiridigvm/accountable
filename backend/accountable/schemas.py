@@ -5,6 +5,7 @@ from datetime import date
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic_core import PydanticCustomError
 
 Stage = Literal["New", "Qualified", "Proposal", "Negotiation", "Won", "Lost"]
 ContactStatus = Literal["lead", "qualified", "customer"]
@@ -137,3 +138,26 @@ class ActivityPatch(BaseModel):
     done: bool | None = None
 
     check_description = field_validator("description")(_non_blank)
+
+
+USER_MESSAGE_LIMIT = 2000
+
+
+class ChatMessage(BaseModel):
+    """Only text turns come from the browser, so it can't send fake tool results (R68)."""
+
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=20_000)
+
+    @model_validator(mode="after")
+    def check_user_length(self):
+        if self.role == "user" and len(self.content) > USER_MESSAGE_LIMIT:
+            # The panel refuses this first. The text matches R73.
+            raise PydanticCustomError(
+                "too_long", "Messages can be up to 2,000 characters"
+            )
+        return self
+
+
+class ChatIn(BaseModel):
+    messages: list[ChatMessage] = Field(min_length=1, max_length=40)

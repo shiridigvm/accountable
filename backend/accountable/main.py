@@ -17,6 +17,7 @@ from sqlalchemy.exc import IntegrityError
 from accountable.auth import NotSignedIn, SignInServiceDown, require_user
 from accountable.clock import today
 from accountable.config import FRONTEND_DIST, check_settings, database_url
+from accountable.copilot import CopilotBusy, CopilotFailed, CopilotNotSetUp
 from accountable.db import make_engine
 from accountable.deals import NotFound
 from accountable.migrate import run_migrations
@@ -25,6 +26,7 @@ from accountable.routes import (
     admin,
     auth,
     contacts,
+    copilot,
     dashboard,
     deals,
     organizations,
@@ -57,6 +59,7 @@ for router in (
     pipeline.router,
     dashboard.router,
     search.router,
+    copilot.router,
     admin.router,
 ):
     app.include_router(router, dependencies=[Depends(require_user)])
@@ -102,6 +105,33 @@ async def delete_refused(_request: Request, exc: DeleteRefused):
 @app.exception_handler(NotFound)
 async def not_found(_request: Request, exc: NotFound):
     return JSONResponse(status_code=404, content={"error": str(exc)})
+
+
+@app.exception_handler(CopilotNotSetUp)
+async def copilot_not_set_up(_request: Request, _exc: CopilotNotSetUp):
+    return JSONResponse(
+        status_code=503,
+        content={
+            "error": "The Copilot isn't set up yet. Ask whoever runs Accountable "
+            "to add an OpenRouter key."
+        },
+    )
+
+
+@app.exception_handler(CopilotBusy)
+async def copilot_busy(_request: Request, _exc: CopilotBusy):
+    return JSONResponse(
+        status_code=429,
+        content={"error": "The AI service is busy. Try again in a minute."},
+    )
+
+
+@app.exception_handler(CopilotFailed)
+async def copilot_failed(_request: Request, _exc: CopilotFailed):
+    return JSONResponse(
+        status_code=502,
+        content={"error": "The Copilot couldn't get an answer. Try again."},
+    )
 
 
 @app.exception_handler(RequestValidationError)

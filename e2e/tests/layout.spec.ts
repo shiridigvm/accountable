@@ -83,3 +83,73 @@ test("the menu at 700px opens inside the window", async ({ page }) => {
   expect(menu.x + menu.width).toBeLessThanOrEqual(700);
   expect(await pageScrollsSideways(page)).toBe(false);
 });
+
+test("on a wide screen the Copilot button sits left of the user menu, and the open panel narrows the page", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/dashboard");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+  const button = page.getByRole("button", { name: "Copilot", exact: true });
+  const copilot = await box(page, ".copilot-button");
+  const menu = await box(page, ".user-menu-button");
+  const topbar = await box(page, ".topbar");
+  expect(copilot.x + copilot.width).toBeLessThanOrEqual(menu.x);
+  expect(copilot.x).toBeGreaterThan(1440 / 2);
+  expect(copilot.y).toBeGreaterThanOrEqual(topbar.y);
+  const before = await box(page, ".content");
+
+  await button.click();
+  await expect(button).toHaveAttribute("aria-pressed", "true");
+  const panel = await box(page, ".copilot");
+  const after = await box(page, ".content");
+  expect(after.width).toBeLessThan(before.width - 350);
+  expect(panel.x).toBeGreaterThanOrEqual(after.x + after.width);
+  expect(panel.x + panel.width).toBeLessThanOrEqual(1440);
+  expect(panel.y).toBeGreaterThanOrEqual(topbar.y + topbar.height);
+  expect(await pageScrollsSideways(page)).toBe(false);
+  // The message box and Send fit in the window without scrolling.
+  const send = await box(page, ".copilot-form button");
+  expect(send.y + send.height).toBeLessThanOrEqual(900);
+  // The dashboard folds to one column in the narrower area, as in a narrow window.
+  const kpis = page.locator(".kpis > *");
+  const first = await kpis.nth(0).boundingBox();
+  const second = await kpis.nth(1).boundingBox();
+  expect(second?.y).toBeGreaterThan((first?.y ?? 0) + (first?.height ?? 0) - 1);
+});
+
+test("on a phone the Copilot button is in the bar, and the open panel covers the content", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/dashboard");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+  const wordmark = await box(page, ".wordmark");
+  const copilot = await box(page, ".copilot-button");
+  const menu = await box(page, ".user-menu-button");
+  expect(
+    Math.abs(copilot.y + copilot.height / 2 - (menu.y + menu.height / 2)),
+  ).toBeLessThan(8);
+  expect(copilot.x).toBeGreaterThanOrEqual(wordmark.x + wordmark.width);
+  expect(copilot.x + copilot.width).toBeLessThanOrEqual(menu.x);
+
+  await page.getByRole("button", { name: "Copilot", exact: true }).click();
+  const panel = await box(page, ".copilot");
+  const nav = await box(page, 'nav[aria-label="Main"]');
+  expect(panel.x).toBe(0);
+  expect(panel.width).toBe(390);
+  expect(panel.y).toBeGreaterThanOrEqual(nav.y + nav.height - 1);
+  // The panel is on top of the page: the point at its middle belongs to it.
+  const onTop = await page.evaluate(
+    ([x, y]) => !!document.elementFromPoint(x, y)?.closest(".copilot"),
+    [panel.x + panel.width / 2, panel.y + 100],
+  );
+  expect(onTop).toBe(true);
+  // Opening it doesn't scroll the bar away, and Send is in the window.
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  const send = await box(page, ".copilot-form button");
+  expect(send.y + send.height).toBeLessThanOrEqual(844);
+  expect(await pageScrollsSideways(page)).toBe(false);
+});

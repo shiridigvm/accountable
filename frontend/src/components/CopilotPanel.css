@@ -1,0 +1,226 @@
+/* Copilot panel (copilot.md, Screen). Colors come from the tokens only. Where
+   the panel sits in the page is set with the shell's grid in styles.css. */
+.copilot {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* It starts 94px down (the top bar plus a 20px gap) and stays there while the
+     page scrolls, so the message box and Send are always in the window. */
+  position: sticky;
+  top: 94px;
+  height: calc(100vh - 114px);
+  margin: 20px 36px 20px 0;
+  padding: 18px 18px 16px;
+  border-radius: 18px;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.copilot[hidden] {
+  display: none;
+}
+
+.copilot-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.copilot-head h2 {
+  font-size: 18px;
+}
+
+.copilot-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.copilot-empty,
+.copilot-thinking {
+  margin: 0;
+}
+
+.copilot-message {
+  margin: 0;
+  max-width: 88%;
+  padding: 9px 12px;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* Replies are plain text: keep the model's line breaks. */
+.copilot-user,
+.copilot-text {
+  white-space: pre-wrap;
+}
+
+.copilot-user {
+  align-self: flex-end;
+  background: var(--sea-tint);
+}
+
+.copilot-reply {
+  align-self: flex-start;
+  background: var(--page);
+}
+
+.copilot-text {
+  margin: 0;
+}
+
+.copilot-error {
+  align-self: flex-start;
+  color: var(--raspberry);
+  background: var(--page);
+}
+
+.copilot-records {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.copilot-records a,
+.proposal-outcome a {
+  color: var(--sea-ink);
+  font-weight: 600;
+}
+
+.copilot-form {
+  display: grid;
+  gap: 8px;
+}
+
+.copilot-form textarea {
+  font: inherit;
+  resize: vertical;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--page);
+  color: var(--ink);
+}
+
+.copilot-form textarea[aria-invalid='true'] {
+  outline: 2px solid var(--raspberry);
+}
+
+.copilot-form p {
+  margin: 0;
+  font-size: 12px;
+}
+
+.copilot-form .button {
+  justify-self: end;
+}
+
+/* A proposed change: a panel inside the reply. */
+.proposal {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.proposal-title {
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+
+.proposal-name {
+  display: block;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.proposal-fields {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+
+.proposal-fields dt {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.proposal-fields dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.proposal-current {
+  color: var(--muted);
+}
+
+.proposal-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.proposal-cancel {
+  color: var(--ink);
+}
+
+.proposal-cancel:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.proposal-outcome {
+  margin: 10px 0 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The Copilot button in the top bar, left of the user menu (R58). */
+.copilot-button {
+  margin-left: auto;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.copilot-button[aria-pressed='true'] {
+  background: var(--sea-tint);
+}
+
+/* Narrow screens: the button sits in the bar between the wordmark and the user
+   menu, and the open panel covers the page below the bar (appearance.md). */
+@media (max-width: 720px) {
+  .copilot-button {
+    grid-area: copilot;
+    align-self: center;
+    margin: 12px 0 0;
+    background: var(--page);
+  }
+
+  /* The bar above is about 185px tall, so the panel fills the rest of the
+     window and the bar stays in view. */
+  .copilot {
+    grid-area: content;
+    z-index: 10;
+    position: relative;
+    top: auto;
+    height: calc(100dvh - 185px);
+    min-height: 320px;
+    margin: 0;
+    border-radius: 0;
+  }
+}

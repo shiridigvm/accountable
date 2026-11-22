@@ -37,6 +37,16 @@ Built to `docs/changes/dark-mode/plan.md`, all phases done.
   - `plan.md` now records what was built: no `readSavedTheme`, no Marigold small-text token, and the dark Raspberry fill.
   - Below 720px wide the sidebar becomes a bar above the content (spec 6.2). Before, it kept its 220px width and the dashboard and pipeline were cut off on a phone.
 
+## AI Copilot (branch `copilot`)
+
+Built to `docs/changes/copilot/plan.md`, phases 1 to 3 and the automated part of phase 4. Departures are in the plan's section 5.
+
+- Backend: `POST /api/copilot/chat` (`routes/copilot.py`, `copilot.py`, `rules/copilot.py`). It sends the conversation and six tools to OpenRouter with `urllib`, runs up to 5 rounds of lookups through the API's own read route functions, and returns `{reply, records, proposal}`. It never writes. Proposals are checked against the forms' request schemas, and an update must name a record that exists. Errors map to 503 (no key), 429 (rate limit) and 502 (any other failure), with the R73 text. Only the status code is logged.
+- Frontend: the Copilot button in the top bar, the panel (`components/CopilotPanel.tsx`) and the proposal card (`components/ProposalCard.tsx`). Confirm sends the proposal's fields to the normal `POST` or `PATCH` route, then `notifyDataChanged()` makes every `useResource` hook on screen load again. The conversation lives in the page only.
+- Settings: `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` (default `openrouter/free`) from `.env`, passed by `scripts/run.mjs` in `dev` and `start`, and listed in `render.yaml`. `OPENROUTER_BASE_URL` exists for the end-to-end tests only, and `run.mjs` removes it.
+- Tests: `test_copilot_rules.py`, `test_api_copilot.py`, `proposal.test.ts`, `useResource.test.ts`, `ProposalCard.test.tsx`, `CopilotPanel.test.tsx`, Copilot cases in `Layout.test.tsx`, `e2e/tests/copilot.spec.ts` and Copilot cases in `e2e/tests/layout.spec.ts`. The end-to-end tests run against `e2e/fake-openrouter.mjs` on port 8100. No test calls OpenRouter.
+- No new dependencies.
+
 ## How to run
 
 Needs Node (24 or later), npm, and uv. Python 3.12 is pinned in `.python-version`.
@@ -46,7 +56,7 @@ npm install
 npm run dev
 ```
 
-`.env` holds `DATABASE_URL`, `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. Then open http://127.0.0.1:5173 and sign in, with your Supabase user or with test sign-in. `npm run dev` keeps its data in `backend/data/accountable.db` and never uses `DATABASE_URL`. The first start creates the database and fills it with sample data.
+`.env` holds `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and for the Copilot `OPENROUTER_API_KEY` and optionally `OPENROUTER_MODEL`. Then open http://127.0.0.1:5173 and sign in, with your Supabase user or with test sign-in. `npm run dev` keeps its data in `backend/data/accountable.db` and never uses `DATABASE_URL`. The first start creates the database and fills it with sample data.
 
 To run the app the way Render does, against the team's Postgres on Supabase (its migrations change that database):
 
@@ -94,6 +104,15 @@ Other checks: `npm run typecheck`, `npm run lint`, `npm run build`.
 - Timeline errors on the organization, contact and deal pages showed "Something went wrong." instead of the server's message. The message is now shown (`frontend/src/pages/DealDetail.test.tsx`).
 
 ## Known gaps
+
+- The Copilot (`copilot`):
+  - Not yet checked by hand against the real OpenRouter (plan, Phase 4): two questions, a confirmed and a cancelled update, a delete request, and the "isn't set up" message with the key removed. The fake in the end-to-end tests follows OpenRouter's documented reply shape, but only a real call proves it.
+  - How well answers come out depends on the model. `openrouter/free` picks a free model per request, so quality and tool use vary. Set `OPENROUTER_MODEL` to pin one.
+  - Record content goes to OpenRouter and the model it picks, and some free providers may log prompts. The team should choose the provider and model with that in mind.
+  - A misleading answer caused by text inside a record can't be ruled out. It can't cause a change, because every change needs Confirm.
+  - A proposal card shows linked records by id (`#12`), not by name.
+  - With the panel open at 1440px wide, the page area is about 805px, the same as a 1100px window. The dashboard and detail pages fold to one column, but wide tables such as Deals scroll sideways and the pipeline shows fewer columns, as they already do in a 1100px window.
+  - The 422 for a message over 2,000 characters reads "Check messages.0: Messages can be up to 2,000 characters." The panel refuses such a message before sending, so people only see the panel's own text.
 
 - Sign-in, search and the menu (`multi-user`):
   - No automated test signs in through Supabase or runs on Postgres. Those are checked by hand with `npm start` against Supabase: see the plan's Phase 1 checks.

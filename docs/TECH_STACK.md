@@ -9,6 +9,8 @@ Prefer popular, well-supported libraries to custom code, such as for the data ta
 
 Supabase provides sign-in (email and password, through `@supabase/supabase-js` in the browser) and the database. The app deploys to Render's free plan as one web service, described in `render.yaml`.
 
+The Copilot calls OpenRouter's chat completions API from the backend, with Python's `urllib` and no SDK. The key and the model are `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` in `.env`. The tests never call OpenRouter: the backend tests replace the call, and the end-to-end tests run a scripted fake (`e2e/fake-openrouter.mjs`).
+
 Commands are npm scripts in a `package.json` at the repo root, with `frontend/` as an npm workspace, so they work the same on Mac, Linux and Windows:
 
 - `npm run dev` starts the backend and the frontend together

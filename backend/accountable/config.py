@@ -46,6 +46,21 @@ def supabase_publishable_key() -> str:
     return os.environ.get("SUPABASE_PUBLISHABLE_KEY", "").strip()
 
 
+def openrouter_api_key() -> str:
+    """The Copilot's OpenRouter key (R72). Empty means the Copilot isn't set up."""
+    return os.environ.get("OPENROUTER_API_KEY", "").strip()
+
+
+def openrouter_model() -> str:
+    return os.environ.get("OPENROUTER_MODEL", "").strip() or "openrouter/free"
+
+
+def openrouter_base_url() -> str:
+    """Only the end-to-end tests change this, to point at their fake OpenRouter."""
+    url = os.environ.get("OPENROUTER_BASE_URL", "").strip().rstrip("/")
+    return url or "https://openrouter.ai/api/v1"
+
+
 class UnsafeSettings(Exception):
     pass
 

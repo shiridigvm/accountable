@@ -48,3 +48,20 @@ def test_dev_and_start_listen_on_loopback_only():
     launcher = (PROJECT_ROOT / "scripts" / "run.mjs").read_text()
     assert "'--host', '127.0.0.1'" in launcher
     assert "0.0.0.0" not in launcher
+
+
+def test_openrouter_defaults(monkeypatch):
+    """R72: the free router by default, and OpenRouter's own address."""
+    assert config.openrouter_api_key() == ""
+    assert config.openrouter_model() == "openrouter/free"
+    assert config.openrouter_base_url() == "https://openrouter.ai/api/v1"
+    monkeypatch.setenv("OPENROUTER_MODEL", "some/model")
+    monkeypatch.setenv("OPENROUTER_BASE_URL", "http://127.0.0.1:8100/api/v1/")
+    assert config.openrouter_model() == "some/model"
+    assert config.openrouter_base_url() == "http://127.0.0.1:8100/api/v1"
+
+
+def test_run_never_passes_a_base_url_for_openrouter():
+    """Only the end-to-end tests point the backend at a fake OpenRouter (R72)."""
+    launcher = (PROJECT_ROOT / "scripts" / "run.mjs").read_text()
+    assert "delete env.OPENROUTER_BASE_URL;" in launcher
