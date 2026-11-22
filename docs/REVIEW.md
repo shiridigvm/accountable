@@ -8,9 +8,7 @@ Make a separate pass over every change for each of these:
 
 - **Bugs:** the code does what it's meant to, including when something goes wrong.
 - **Security:** no secrets or personal data are exposed, and nobody can do what they shouldn't.
-- **Matches the spec and plan.md:** the change does what `docs/spec.md`, the area files in `docs/specs/` it touches, and `plan.md` say, with nothing missing and nothing extra. Check that the tests for a spec rule cover every case the rule covers, so a passing test does not hide a gap. Check that any departure from the plan is written into `plan.md`.
-- **Undocumented code:** flag any code that `docs/spec.md` and the area files don't describe, so the change updates the right area file too. Flag a change that alters an area's behavior without updating that area's file, and a new area file that is missing from the index in `docs/spec.md`.
-- **Standards:** the change follows docs/STANDARDS.md.
+- **Matches spec.md and plan.md:** the change does what those documents say, with nothing missing and nothing extra.
 
 ## Important
 
