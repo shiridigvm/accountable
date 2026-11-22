@@ -151,5 +151,8 @@ test("on a phone the Copilot button is in the bar, and the open panel covers the
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
   const send = await box(page, ".copilot-form button");
   expect(send.y + send.height).toBeLessThanOrEqual(844);
+  // Scrolling the page behind it doesn't move the panel.
+  await page.mouse.wheel(0, 600);
+  await expect.poll(async () => (await box(page, ".copilot")).y).toBe(panel.y);
   expect(await pageScrollsSideways(page)).toBe(false);
 });

@@ -121,6 +121,12 @@ describe('Layout', () => {
     expect(button).toHaveAttribute('aria-pressed', 'false');
     expect(button).toHaveFocus();
 
+    // Escape works with focus outside the panel too.
+    await userEvent.click(button);
+    button.focus();
+    await userEvent.keyboard('{Escape}');
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+
     await userEvent.click(button);
     await userEvent.click(
       screen.getByRole('button', { name: 'Close Copilot' }),

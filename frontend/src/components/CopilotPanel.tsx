@@ -41,25 +41,25 @@ export function CopilotPanel({ id, open, onClose }: Props) {
   const [thinking, setThinking] = useState(false);
   const [draftError, setDraftError] = useState<string | null>(null);
   const input = useRef<HTMLTextAreaElement>(null);
-  const panel = useRef<HTMLElement>(null);
 
   useEffect(() => {
     // preventScroll: focusing must not scroll the page and hide the top bar.
     if (open) input.current?.focus({ preventScroll: true });
   }, [open]);
 
-  // Escape anywhere in the panel closes it (R58). A listener, because lint
-  // rightly refuses key handlers on a non-interactive element like <aside>.
+  // Escape anywhere on the page closes the open panel (R58), except where
+  // Escape already means something: a dialog, a menu or the search box.
   useEffect(() => {
-    const node = panel.current;
-    if (!open || !node) return;
+    if (!open) return;
     function onKey(event: globalThis.KeyboardEvent) {
       if (event.key !== 'Escape') return;
+      const target = event.target as Element | null;
+      if (target?.closest('dialog, [role="menu"], [role="combobox"]')) return;
       event.preventDefault();
       onClose();
     }
-    node.addEventListener('keydown', onKey);
-    return () => node.removeEventListener('keydown', onKey);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
   async function send() {
@@ -117,7 +117,6 @@ export function CopilotPanel({ id, open, onClose }: Props) {
       className="copilot"
       aria-labelledby={`${id}-heading`}
       hidden={!open}
-      ref={panel}
     >
       <div className="copilot-head">
         <h2 id={`${id}-heading`}>Copilot</h2>

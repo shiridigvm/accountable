@@ -211,15 +211,13 @@
     background: var(--page);
   }
 
-  /* The bar above is about 185px tall, so the panel fills the rest of the
-     window and the bar stays in view. */
+  /* Fixed below the bar, which is about 185px tall, so the page behind it
+     can't scroll it away. */
   .copilot {
-    grid-area: content;
+    position: fixed;
     z-index: 10;
-    position: relative;
-    top: auto;
-    height: calc(100dvh - 185px);
-    min-height: 320px;
+    inset: 185px 0 0;
+    height: auto;
     margin: 0;
     border-radius: 0;
   }
