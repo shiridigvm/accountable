@@ -9,16 +9,16 @@ Part of the product spec. Read `docs/spec.md` first. Requirement and decision nu
 - **R26**: `npm run dev` starts the backend and the frontend together on `127.0.0.1`. It reads `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` from `.env` and leaves `DATABASE_URL` out, so its data stays in the local SQLite file. It turns on test sign-in (R43 in `accounts.md`) so ui-check can sign in. The app opens at http://127.0.0.1:5173, on the sign-in screen when signed out and on the dashboard after signing in.
 - **R27**: `npm run seed` replaces the local SQLite database with the sample data. When `DATABASE_URL` points at Postgres, it refuses, says why, and changes nothing, so nobody wipes the team's data by mistake.
 - **R28**: When the database is new or empty, the first start runs the migrations and fills it with sample data. This holds for a new SQLite file and for an empty Postgres database on Supabase, which is seeded once. A database with data in it is never replaced.
-- **R29**: The app needs an internet connection, for Supabase Auth and, in the built app, Supabase's Postgres. The tests run without one. Fonts are bundled, not loaded from Google Fonts at run time.
+- **R29**: The app needs an internet connection, for Supabase Auth, OpenRouter for the Copilot and, in the built app, Supabase's Postgres. The tests run without one. Fonts are bundled, not loaded from Google Fonts at run time.
 
 ### Settings
 
-- **R55**: The settings live in the git-ignored `.env` file as `DATABASE_URL`, `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. When `DATABASE_URL` is not set, the backend uses the local SQLite file. The settings are never committed or logged, and only the URL and publishable key reach the browser (R41).
+- **R55**: The settings live in the git-ignored `.env` file as `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`. When `DATABASE_URL` is not set, the backend uses the local SQLite file. Without `OPENROUTER_API_KEY` the app runs and the Copilot says it isn't set up (R73 in `copilot.md`). `OPENROUTER_MODEL` is optional and defaults to `openrouter/free`. `npm run dev` and `npm start` both pass the OpenRouter settings to the backend. The settings are never committed or logged, and only the URL and publishable key reach the browser (R41).
 
 ### Running it the way Render does
 
-- **R56**: `npm start` builds the frontend and runs the app on this computer the way Render runs it: one FastAPI process serving the built frontend and the API at http://127.0.0.1:8000, using all three settings from `.env`, against Supabase. Its migrations change the real database.
-- **R57**: The app deploys to Render's free plan as one web service, described in `render.yaml`. Render builds the frontend, runs the migrations when the app starts, and serves it at its onrender.com address. The three settings are entered in Render, not written in `render.yaml`. Render deploys `main` each time CI passes on it.
+- **R56**: `npm start` builds the frontend and runs the app on this computer the way Render runs it: one FastAPI process serving the built frontend and the API at http://127.0.0.1:8000, using the settings from `.env`, against Supabase. Its migrations change the real database.
+- **R57**: The app deploys to Render's free plan as one web service, described in `render.yaml`. Render builds the frontend, runs the migrations when the app starts, and serves it at its onrender.com address. The settings are entered in Render, not written in `render.yaml`. Render deploys `main` each time CI passes on it.
 
 ## Sample data
 
@@ -39,6 +39,7 @@ Per `docs/TECH_STACK.md`.
 
 - **Frontend** (`frontend/`): TypeScript, React 19, Vite, React Router. TanStack Table for tables, Recharts for charts, dnd-kit for the pipeline. Unit tests with Vitest and Testing Library.
 - **Backend** (`backend/accountable/`): Python 3.12, FastAPI, SQLAlchemy Core, with Postgres on Supabase for the built app and SQLite for `npm run dev` and the tests. Business rules live in `backend/accountable/rules/` as functions with no I/O. Managed with uv, with `pyproject.toml` and `uv.lock` at the repo root. Tests in `backend/tests/` with pytest.
+- **Copilot**: the backend calls OpenRouter's chat completions API and gives the model a fixed set of read-only lookups that call the same functions as the API's read routes. Proposals are checked on the backend and saved by the browser through the existing routes when the person confirms (`copilot.md`).
 - **Sign-in**: Supabase Auth with email and password. The browser signs in with Supabase directly and sends the access token to the backend, which checks it (R40).
 - **Database file**: `backend/data/accountable.db`, git-ignored. The `ACCOUNTABLE_DB` environment variable points elsewhere. The end-to-end tests use a separate file.
 - **Root scripts** in `package.json`: `npm run dev`, `npm start`, `npm test`, `npm run seed`, plus `typecheck`, `lint` and `build`. `frontend/` and `e2e/` are npm workspaces.
@@ -47,13 +48,13 @@ Per `docs/TECH_STACK.md`.
 
 ## Testing
 
-`npm test` runs three suites and fails if any test fails. Every suite uses its own SQLite database and test sign-in (R43), and never touches Supabase, whether or not the settings are in `.env`. CI needs no secrets. Every unit test, backend and frontend, runs in under a second on the developer's computer, because CI runs on a much slower machine.
+`npm test` runs three suites and fails if any test fails. Every suite uses its own SQLite database and test sign-in (R43), and never touches Supabase or OpenRouter, whether or not the settings are in `.env`. Every Copilot test uses scripted AI replies in place of OpenRouter, with no network call. CI needs no secrets. Every unit test, backend and frontend, runs in under a second on the developer's computer, because CI runs on a much slower machine.
 
-- Backend unit and API tests (pytest), covering the rules in the area files and the API in `data.md`, including the 401 on every route without a valid token, who added and changed a record, search, the seed's refusal on Postgres, and the refusal to start with test sign-in on Postgres. Restart persistence is tested by opening a new app instance on the same file.
-- Frontend unit tests (Vitest), covering formatting, board layout, dashboard data, tables, dialogs, the forms, the sign-in screen, search, the user menu and its initials, the theme choice including System, and the color tokens (light values unchanged, no colors outside `styles.css`, dark-mode contrast for R36).
-- End-to-end tests (Playwright Test, with the installed Google Chrome) in `e2e/tests/`. They start the app on their own servers and database, covering the sign-in screen when signed out, test sign-in and sign out, tables, the contacts filter, delete refusals, detail pages with who added a record, search, the pipeline, the dashboard, and picking a theme in the user menu and keeping it after a reload.
+- Backend unit and API tests (pytest), covering the rules in the area files and the API in `data.md`, including the 401 on every route without a valid token, who added and changed a record, search, the seed's refusal on Postgres, the Copilot (answers, proposal checks including dropped proposals, record content with instructions in it, no write from a reply, no key, rate limit and OpenRouter failure, the 2,000-character limit, and 401 signed out), and the refusal to start with test sign-in on Postgres. Restart persistence is tested by opening a new app instance on the same file.
+- Frontend unit tests (Vitest), covering formatting, board layout, dashboard data, tables, dialogs, the forms, the sign-in screen, search, the user menu and its initials, the Copilot panel (messages, proposal cards, Confirm and Cancel, errors, replies shown as plain text), the theme choice including System, and the color tokens (light values unchanged, no colors outside `styles.css`, dark-mode contrast for R36).
+- End-to-end tests (Playwright Test, with the installed Google Chrome) in `e2e/tests/`. They start the app on their own servers and database, covering the sign-in screen when signed out, test sign-in and sign out, tables, the contacts filter, delete refusals, detail pages with who added a record, search, the pipeline, the dashboard, picking a theme in the user menu and keeping it after a reload, and the Copilot with scripted replies: asking a question, confirming a proposed change and seeing it saved, cancelling one, and being told a delete isn't supported.
 
-Not covered by automated tests: signing in through Supabase Auth, the app on Postgres and on Render (checked by hand with `npm start` and the live site), visual comparison with the mockup, how dark mode looks, Safari, Firefox and Edge, and browser restart.
+Not covered by automated tests: signing in through Supabase Auth, the Copilot against a real OpenRouter model (checked by hand), how well a given model answers, the app on Postgres and on Render (checked by hand with `npm start` and the live site), visual comparison with the mockup, how dark mode looks, Safari, Firefox and Edge, and browser restart.
 
 ## Design decisions
 

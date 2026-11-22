@@ -31,8 +31,9 @@ The approved dashboard and pipeline design is `docs/mockups/final.html`.
 ### Layout
 
 - Left sidebar with five sections: Dashboard, Organizations, Contacts, Deals, Pipeline. Panel surface for the current mode, active item in Sea Green tint.
-- Top bar across the top of the main area: the search box (R51 in `search.md`) on the left and the user menu button (R47 in `accounts.md`) on the right.
-- Below about 720px wide, the sidebar becomes a bar across the top (wordmark and user menu button, then the search box at full width, then the section links, which scroll sideways if they don't fit), so the main area keeps the full width. The separate top bar is not shown at this width.
+- Top bar across the top of the main area: the search box (R51 in `search.md`) on the left, then the Copilot button (R58 in `copilot.md`) and the user menu button (R47 in `accounts.md`) on the right.
+- The Copilot panel opens at the right of the window, below the top bar. On wide screens the main area narrows to make room for it (see `copilot.md`).
+- Below about 720px wide, the sidebar becomes a bar across the top (wordmark, Copilot button and user menu button, then the search box at full width, then the section links, which scroll sideways if they don't fit), so the main area keeps the full width. The separate top bar is not shown at this width, and the Copilot panel covers the main area.
 - Main area: top bar, page title, then content.
 - The sign-in screen has no sidebar and no top bar (see `accounts.md`).
 - Detail pages: a summary panel at the top (key fields and links), then two columns on wide screens, with related records on the left and the timeline on the right. A single column below about 1100px.
